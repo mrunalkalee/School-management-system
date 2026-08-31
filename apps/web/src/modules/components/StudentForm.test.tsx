@@ -1,0 +1,2 @@
+import { fireEvent, render, screen } from '@testing-library/react'; import { describe, expect, it, vi } from 'vitest'; import { StudentForm } from './StudentForm';
+describe('StudentForm', () => { it('prevents submission until required fields are valid', async () => { const submit = vi.fn(); render(<StudentForm onSubmit={submit} />); fireEvent.click(screen.getByRole('button', { name: /save student/i })); expect(await screen.findAllByRole('alert')).not.toHaveLength(0); }); });
