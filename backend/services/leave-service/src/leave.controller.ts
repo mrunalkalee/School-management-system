@@ -1,0 +1,2 @@
+import { Body, Controller, Get, Param, Post } from '@nestjs/common'; import { LeaveService } from './leave.service'; import { LeaveRequestDto } from './dto/leave.dto';
+@Controller('leaves') export class LeaveController { constructor(private readonly service: LeaveService) {} @Get() all() { return this.service.findAll(); } @Get(':id') one(@Param('id') id: string) { return this.service.findOne(id); } @Post() create(@Body() dto: LeaveRequestDto) { return this.service.create(dto.data); } }

@@ -1,0 +1,1 @@
+export const Tabs=({items,active,onChange}:{items:string[];active:string;onChange:(x:string)=>void})=><div>{items.map(x=><button className={x===active?"button":""} onClick={()=>onChange(x)} key={x}>{x}</button>)}</div>;

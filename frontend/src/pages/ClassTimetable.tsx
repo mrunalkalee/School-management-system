@@ -1,0 +1,1 @@
+import { StatCard } from '../components/ui/StatCard'; export const ClassTimetable=()=> <section><h1>Class Timetable</h1><div className="grid"><StatCard label="Active records" value="0"/><StatCard label="Updated" value="Today"/></div></section>;

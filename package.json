@@ -1,0 +1,8 @@
+{
+  "name": "brightboard",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": ["backend/*", "backend/services/*", "frontend", "packages/*"],
+  "scripts": { "dev": "npm run dev --workspace=frontend", "build": "npm run build --workspaces --if-present", "validate:structure": "node scripts/validate-structure.js" },
+  "engines": { "node": ">=20" }
+}

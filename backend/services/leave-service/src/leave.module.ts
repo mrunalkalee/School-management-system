@@ -1,0 +1,2 @@
+import { Module } from '@nestjs/common'; import { MongooseModule } from '@nestjs/mongoose'; import { Leave, LeaveSchema } from './leave.schema'; import { LeaveService } from './leave.service'; import { LeaveController } from './leave.controller';
+@Module({ imports:[MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://localhost:27017/brightboard-leave'), MongooseModule.forFeature([{name:Leave.name,schema:LeaveSchema}])], controllers:[LeaveController], providers:[LeaveService] }) export class LeaveModule {}

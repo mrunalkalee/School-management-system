@@ -1,0 +1,1 @@
+import { createContext,useContext,type ReactNode } from 'react'; import { notices } from '../data/mockData'; const C=createContext({notices}); export const SchoolDataProvider=({children}:{children:ReactNode})=><C.Provider value={{notices}}>{children}</C.Provider>; export const useSchoolData=()=>useContext(C);

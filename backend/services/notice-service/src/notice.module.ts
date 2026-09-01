@@ -1,0 +1,2 @@
+import { Module } from '@nestjs/common'; import { MongooseModule } from '@nestjs/mongoose'; import { Notice, NoticeSchema } from './notice.schema'; import { NoticeService } from './notice.service'; import { NoticeController } from './notice.controller';
+@Module({ imports:[MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://localhost:27017/brightboard-notice'), MongooseModule.forFeature([{name:Notice.name,schema:NoticeSchema}])], controllers:[NoticeController], providers:[NoticeService] }) export class NoticeModule {}

@@ -1,0 +1,2 @@
+import { Body, Controller, Get, Param, Post } from '@nestjs/common'; import { LibraryItemService } from './library.service'; import { LibraryItemRequestDto } from './dto/library.dto';
+@Controller('librarys') export class LibraryItemController { constructor(private readonly service: LibraryItemService) {} @Get() all() { return this.service.findAll(); } @Get(':id') one(@Param('id') id: string) { return this.service.findOne(id); } @Post() create(@Body() dto: LibraryItemRequestDto) { return this.service.create(dto.data); } }

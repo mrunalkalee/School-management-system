@@ -1,0 +1,2 @@
+import { Module } from '@nestjs/common'; import { MongooseModule } from '@nestjs/mongoose'; import { Student, StudentSchema } from './student.schema'; import { StudentService } from './student.service'; import { StudentController } from './student.controller';
+@Module({ imports:[MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://localhost:27017/brightboard-student'), MongooseModule.forFeature([{name:Student.name,schema:StudentSchema}])], controllers:[StudentController], providers:[StudentService] }) export class StudentModule {}

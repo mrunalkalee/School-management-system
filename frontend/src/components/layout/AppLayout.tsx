@@ -1,0 +1,1 @@
+import type { ReactNode } from "react"; import { Header } from "./Header"; import { Sidebar } from "./Sidebar"; export const AppLayout=({children}:{children:ReactNode})=><div className="app-layout"><Sidebar/><main><Header/>{children}</main></div>;

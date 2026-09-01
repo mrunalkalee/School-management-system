@@ -1,0 +1,1 @@
+@tailwind base;@tailwind components;@tailwind utilities;@import './design-tokens.css';@import './components.css';body{margin:0;background:#f8fafc;color:#172033;font-family:Inter,system-ui,sans-serif}*{box-sizing:border-box}

@@ -1,0 +1,2 @@
+import { Body, Controller, Get, Param, Post } from '@nestjs/common'; import { TransportRouteService } from './transport.service'; import { TransportRouteRequestDto } from './dto/transport.dto';
+@Controller('transports') export class TransportRouteController { constructor(private readonly service: TransportRouteService) {} @Get() all() { return this.service.findAll(); } @Get(':id') one(@Param('id') id: string) { return this.service.findOne(id); } @Post() create(@Body() dto: TransportRouteRequestDto) { return this.service.create(dto.data); } }

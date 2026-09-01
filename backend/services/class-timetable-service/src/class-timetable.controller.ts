@@ -1,0 +1,2 @@
+import { Body, Controller, Get, Param, Post } from '@nestjs/common'; import { ClassTimetableService } from './class-timetable.service'; import { ClassTimetableRequestDto } from './dto/class-timetable.dto';
+@Controller('class-timetables') export class ClassTimetableController { constructor(private readonly service: ClassTimetableService) {} @Get() all() { return this.service.findAll(); } @Get(':id') one(@Param('id') id: string) { return this.service.findOne(id); } @Post() create(@Body() dto: ClassTimetableRequestDto) { return this.service.create(dto.data); } }

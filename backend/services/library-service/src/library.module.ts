@@ -1,0 +1,2 @@
+import { Module } from '@nestjs/common'; import { MongooseModule } from '@nestjs/mongoose'; import { LibraryItem, LibraryItemSchema } from './library.schema'; import { LibraryItemService } from './library.service'; import { LibraryItemController } from './library.controller';
+@Module({ imports:[MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://localhost:27017/brightboard-library'), MongooseModule.forFeature([{name:LibraryItem.name,schema:LibraryItemSchema}])], controllers:[LibraryItemController], providers:[LibraryItemService] }) export class LibraryItemModule {}

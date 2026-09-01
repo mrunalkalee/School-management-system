@@ -1,0 +1,2 @@
+import { Body, Controller, Get, Param, Post } from '@nestjs/common'; import { ExaminationService } from './examination.service'; import { ExaminationRequestDto } from './dto/examination.dto';
+@Controller('examinations') export class ExaminationController { constructor(private readonly service: ExaminationService) {} @Get() all() { return this.service.findAll(); } @Get(':id') one(@Param('id') id: string) { return this.service.findOne(id); } @Post() create(@Body() dto: ExaminationRequestDto) { return this.service.create(dto.data); } }

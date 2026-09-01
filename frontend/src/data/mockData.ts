@@ -1,0 +1,1 @@
+import type { Notice } from '../types/brightboard'; export const notices:Notice[]=[{id:'1',title:'Welcome to BrightBoard',body:'The new academic year begins Monday.',audience:['Admin','Teacher','Student','Parent']}];

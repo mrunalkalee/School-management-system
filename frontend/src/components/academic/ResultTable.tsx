@@ -1,0 +1,1 @@
+export const ResultTable=({rows=[]}:{rows?:{subject:string;score:number}[]})=><table><thead><tr><th>Subject</th><th>Score</th></tr></thead><tbody>{rows.map(r=><tr key={r.subject}><td>{r.subject}</td><td>{r.score}</td></tr>)}</tbody></table>;
