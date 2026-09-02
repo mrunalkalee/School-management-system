@@ -1,0 +1,16 @@
+{
+  "name": "brightboard",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend/api-gateway",
+    "backend/services/*"
+  ],
+  "scripts": {
+    "dev:all": "concurrently --kill-others-on-fail --names api-gateway \"npm run start:dev --workspace=backend/api-gateway\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
