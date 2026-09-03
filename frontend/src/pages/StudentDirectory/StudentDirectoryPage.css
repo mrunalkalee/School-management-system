@@ -1,0 +1,13 @@
+.student-directory__metrics {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.student-table-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1 0 0;
+  min-height: 0;
+}
