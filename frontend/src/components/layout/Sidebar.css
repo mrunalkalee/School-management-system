@@ -56,6 +56,7 @@
   font-weight: 500;
   color: rgba(255, 255, 255, 0.88);
 }
+.sidebar__nav-icon { width: 18px; height: 18px; margin-right: 12px; vertical-align: -4px; }
 
 .sidebar__nav-item--active {
   background: var(--color-sidebar-active);

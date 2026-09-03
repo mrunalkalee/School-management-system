@@ -5,18 +5,23 @@ import './AppShell.css';
 interface AppShellProps {
   title: string;
   subtitle: string;
+  activeNav?: string;
+  portalLabel?: string;
+  profileName?: string;
+  profileRole?: string;
   children: ReactNode;
+  profileAvatarUrl?: string;
+  showNavIcons?: boolean;
 }
 
 /**
  * Shell used by admin pages: sidebar + top header (search/notifications/profile) + content.
- * The header's global search/notifications are static Figma chrome, not wired to any
- * behavior — they belong to app-wide features outside this page's scope.
+ * The header's global search/notifications are static Figma chrome.
  */
-export function AppShell({ title, subtitle, children }: AppShellProps) {
+export function AppShell({ title, subtitle, activeNav = 'Students', portalLabel = 'Admin portal', profileName = 'Olivia Grant', profileRole = 'School administrator', profileAvatarUrl, showNavIcons = false, children }: AppShellProps) {
   return (
     <div className="app-shell">
-      <Sidebar />
+      <Sidebar activeNav={activeNav} portalLabel={portalLabel} showIcons={showNavIcons} />
       <div className="app-shell__workspace">
         <header className="app-shell__header">
           <div>
@@ -31,12 +36,10 @@ export function AppShell({ title, subtitle, children }: AppShellProps) {
             <div className="app-shell__notifications" aria-label="Notifications">
               <BellGlyph />
             </div>
-            <div className="app-shell__avatar" aria-hidden="true">
-              OG
-            </div>
+            {profileAvatarUrl ? <img className="app-shell__avatar" src={profileAvatarUrl} alt="" /> : <div className="app-shell__avatar" aria-hidden="true">OG</div>}
             <div className="app-shell__profile">
-              <p className="app-shell__profile-name">Olivia Grant</p>
-              <p className="app-shell__profile-role">School administrator</p>
+              <p className="app-shell__profile-name">{profileName}</p>
+              <p className="app-shell__profile-role">{profileRole}</p>
             </div>
           </div>
         </header>
