@@ -1,0 +1,1 @@
+export default function TeacherCard({ label, value, caption, icon, tint }) { return <article className="metric" style={{ background: tint }}><div><small>{label}</small><strong>{value}</strong><em>{caption}</em></div><b>{icon}</b></article> }

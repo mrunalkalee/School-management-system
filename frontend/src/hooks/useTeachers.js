@@ -1,0 +1,3 @@
+import { useCallback, useEffect, useState } from 'react'
+import { deleteTeacher, getTeachers } from '../api/teacherService'
+export function useTeachers() { const [teachers,setTeachers]=useState([]),[isLoading,setIsLoading]=useState(true),[error,setError]=useState(null); const refetch=useCallback(async()=>{setIsLoading(true);try{setTeachers(await getTeachers());setError(null)}catch(e){setError(e)}finally{setIsLoading(false)}},[]);useEffect(()=>{const timer=setTimeout(refetch,0);return()=>clearTimeout(timer)},[refetch]);const removeTeacher=async(id)=>{const old=teachers;setTeachers(x=>x.filter(t=>(t._id||t.id)!==id));try{await deleteTeacher(id)}catch(e){setTeachers(old);throw e}};return {teachers,isLoading,error,refetch,removeTeacher} }
