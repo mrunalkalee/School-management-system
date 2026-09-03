@@ -1,0 +1,27 @@
+.fee-metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+.fee-metric { min-height:112px; padding:16px; background:#fff; border-radius:14px; box-shadow:var(--shadow-card); }
+.fee-metric p { margin:0 0 12px; color:var(--color-text-secondary); font-size:12px; font-weight:600; }
+.fee-metric strong { display:block; margin-bottom:8px; color:var(--color-text-primary); font-size:23px; }
+.fee-metric small { color:var(--color-text-secondary); font-size:10px; }
+.fee-metric--warning strong { color:#9a6d00; }
+.fee-card { flex:1; min-height:0; padding:16px; overflow:auto; background:#fff; border-radius:18px; box-shadow:var(--shadow-table); }
+.fee-toolbar { display:flex; align-items:center; gap:8px; margin-bottom:16px; }
+.fee-search, .fee-filter { display:flex; align-items:center; gap:7px; height:34px; padding:0 10px; border:1px solid var(--color-border); border-radius:8px; color:var(--color-text-secondary); font-size:12px; }
+.fee-search { width:252px; }
+.fee-search input { width:100%; border:0; outline:0; color:var(--color-text-primary); font:inherit; }
+.fee-filter select { border:0; outline:0; color:var(--color-text-primary); font:inherit; font-weight:600; }
+.fee-table-wrap { min-width:700px; }
+.fee-table { width:100%; border-collapse:collapse; color:var(--color-text-secondary); font-size:12px; }
+.fee-table th, .fee-table td { padding:13px 10px; border-bottom:1px solid var(--color-border); text-align:left; }
+.fee-table thead { background:#f8fafc; }
+.fee-table thead th { color:var(--color-text-secondary); font-size:10px; font-weight:700; }
+.fee-table tbody th { color:var(--color-text-primary); font-weight:700; }
+.fee-badge { display:inline-block; padding:4px 9px; border-radius:999px; font-size:10px; font-weight:700; text-transform:capitalize; }
+.fee-badge--paid { background:var(--color-badge-active-bg); color:var(--color-badge-active-fg); }
+.fee-badge--pending { background:#fff4d8; color:#9a6d00; }
+.fee-badge--overdue { background:var(--color-badge-inactive-bg); color:var(--color-badge-inactive-fg); }
+.fee-state { padding:40px 12px; color:var(--color-text-secondary); text-align:center; }
+.fee-state--error { color:var(--color-badge-inactive-fg); }
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+@media (max-width:900px) { .fee-metrics { grid-template-columns:repeat(2,1fr); }.fee-toolbar { flex-wrap:wrap; }.fee-search { flex:1 1 100%; }.fee-card { margin:0 -8px; } }
+@media (max-width:520px) { .fee-metrics { grid-template-columns:1fr; }.fee-filter { flex:1; justify-content:space-between; } }
