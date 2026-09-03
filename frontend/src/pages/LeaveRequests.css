@@ -1,0 +1,27 @@
+.leave-metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+.leave-metric { min-height:112px; padding:16px; background:#fff; border-radius:14px; box-shadow:var(--shadow-card); }
+.leave-metric p { margin:0 0 12px; color:var(--color-text-secondary); font-size:12px; font-weight:600; }
+.leave-metric strong { display:block; margin-bottom:8px; color:var(--color-text-primary); font-size:23px; }
+.leave-metric small { color:var(--color-text-secondary); font-size:10px; }
+.leave-metric--warning strong { color:#9a6d00; }
+.leave-card { flex:1; min-height:0; padding:16px; overflow:auto; background:#fff; border-radius:18px; box-shadow:var(--shadow-table); }
+.leave-toolbar { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; }
+.leave-tabs { display:flex; gap:4px; padding:4px; background:#f8fafc; border-radius:8px; }
+.leave-tabs button { border:0; border-radius:6px; padding:8px 12px; background:transparent; color:var(--color-text-secondary); font-size:12px; font-weight:600; }
+.leave-tabs button.is-active { background:#fff; color:var(--color-text-primary); box-shadow:0 1px 3px rgba(23,63,103,.08); }
+.leave-filter { display:flex; align-items:center; gap:6px; padding:8px 10px; border:1px solid var(--color-border); border-radius:8px; color:var(--color-text-secondary); font-size:12px; }
+.leave-filter select { border:0; outline:0; color:var(--color-text-primary); font-weight:600; }
+.leave-table-wrap { min-width:760px; }
+.leave-table { width:100%; border-collapse:collapse; color:var(--color-text-secondary); font-size:12px; }
+.leave-table th, .leave-table td { padding:13px 10px; border-bottom:1px solid var(--color-border); text-align:left; }
+.leave-table thead { background:#f8fafc; }
+.leave-table thead th { color:var(--color-text-secondary); font-size:10px; font-weight:700; }
+.leave-table tbody th { color:var(--color-text-primary); font-weight:700; }
+.leave-badge { display:inline-block; padding:4px 9px; border-radius:999px; font-size:10px; font-weight:700; text-transform:capitalize; }
+.leave-badge--pending { background:#fff4d8; color:#9a6d00; }
+.leave-badge--approved { background:var(--color-badge-active-bg); color:var(--color-badge-active-fg); }
+.leave-badge--rejected { background:var(--color-badge-inactive-bg); color:var(--color-badge-inactive-fg); }
+.leave-state { padding:40px 12px; color:var(--color-text-secondary); text-align:center; }
+.leave-state--error { color:var(--color-badge-inactive-fg); }
+@media (max-width:900px) { .leave-metrics { grid-template-columns:repeat(2,1fr); }.leave-toolbar { align-items:stretch; flex-direction:column; }.leave-filter { align-self:flex-end; }.leave-card { margin:0 -8px; } }
+@media (max-width:520px) { .leave-metrics { grid-template-columns:1fr; }.leave-tabs { overflow:auto; }.leave-tabs button { white-space:nowrap; } }
