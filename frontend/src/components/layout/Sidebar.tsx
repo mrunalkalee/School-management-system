@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   'Attendance',
   'Fees',
   'Certificates',
+  'Notices',
   'Timetable',
   'Reports',
 ] as const;
