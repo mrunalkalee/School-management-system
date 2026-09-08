@@ -1,0 +1,2 @@
+import { ReferenceScreen } from './ReferenceScreens';
+export default function TeacherDashboard() { return <ReferenceScreen title="Teacher Dashboard" subtitle="Manage classes, attendance, assignments, and communication." activeNav="Teachers" endpoint="teachers/teachers" />; }

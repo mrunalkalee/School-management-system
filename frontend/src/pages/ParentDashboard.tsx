@@ -1,0 +1,2 @@
+import { ReferenceScreen } from './ReferenceScreens';
+export default function ParentDashboard() { return <ReferenceScreen title="Parent Dashboard" subtitle="Monitor student progress, attendance, and school communication." activeNav="Dashboard" />; }

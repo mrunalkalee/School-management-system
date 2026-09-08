@@ -1,0 +1,2 @@
+import { ReferenceScreen } from './ReferenceScreens';
+export default function StudentDashboard() { return <ReferenceScreen title="Student Dashboard" subtitle="Your classes, attendance, assignments, and academic progress." activeNav="Students" endpoint="students/students" />; }

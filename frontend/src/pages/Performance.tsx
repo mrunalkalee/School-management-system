@@ -1,0 +1,2 @@
+import { ReferenceScreen } from './ReferenceScreens';
+export default function Performance() { return <ReferenceScreen title="Performance" subtitle="Review academic performance and progress." activeNav="Performance" />; }

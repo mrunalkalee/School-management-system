@@ -1,0 +1,2 @@
+import { ReferenceScreen } from './ReferenceScreens';
+export default function AuthRoles() { return <ReferenceScreen title="Auth & Role Management" subtitle="Manage access roles through the authentication service." activeNav="Auth & Roles" endpoint="auth/auth/me" />; }

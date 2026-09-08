@@ -1,0 +1,2 @@
+import { ReferenceScreen } from './ReferenceScreens';
+export default function Teachers() { return <ReferenceScreen title="Teachers" subtitle="Manage academic staff and teaching assignments." activeNav="Teachers" endpoint="teachers/teachers" />; }
