@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AppShell } from '../components/layout/AppShell';
 import './ClassTimetable.css';
 
-const SERVICE_URL = (import.meta.env.VITE_CLASS_TIMETABLE_SERVICE_URL as string | undefined) ?? 'http://localhost:3005';
+const SERVICE_URL = (import.meta.env.VITE_TIMETABLE_SERVICE_URL as string | undefined) ?? 'http://localhost:3004';
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const CHEVRON_URL = 'https://www.figma.com/api/mcp/asset/a952bc73-c875-4cac-83ed-a77f10010818.svg';
 
@@ -10,8 +10,7 @@ type UnknownRecord = Record<string, unknown>;
 type TimetableRecord = {
   _id?: string;
   classId: string;
-  section?: string;
-  day?: string;
+  dayOfWeek: string;
   periods: unknown[];
 };
 
@@ -45,7 +44,7 @@ function getRecords(value: unknown): TimetableRecord[] {
 async function loadTimetables(): Promise<TimetableRecord[]> {
   let response: Response;
   try {
-    response = await fetch(`${SERVICE_URL}/class-timetables`);
+    response = await fetch(`${SERVICE_URL}/timetables`);
   } catch {
     throw new Error(`Unable to reach the class timetable service at ${SERVICE_URL}.`);
   }
@@ -84,7 +83,7 @@ export function ClassTimetable() {
   }, [visibleRecords]);
 
   function recordForDay(day: string): TimetableRecord | undefined {
-    return visibleRecords.find((record) => normalized(record.day) === normalized(day));
+    return visibleRecords.find((record) => normalized(record.dayOfWeek) === normalized(day));
   }
 
   function periodForDay(day: string, row: number): unknown {
@@ -163,9 +162,9 @@ export function ClassTimetable() {
 }
 
 function PeriodCard({ period }: { period: unknown }) {
-  const subject = periodText(period, ['subject', 'subjectName', 'name', 'title']);
-  const teacher = periodText(period, ['teacher', 'teacherInitials', 'teacherName', 'initials']);
-  const room = periodText(period, ['room', 'roomId']);
+  const subject = periodText(period, ['subjectId']);
+  const teacher = periodText(period, ['teacherId']);
+  const room = undefined;
   if (!period || (!subject && !teacher && !room)) return <div className="timetable-period timetable-period--empty" role="cell" />;
 
   return (

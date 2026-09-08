@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { AppShell } from '../components/layout/AppShell';
 import './Notices.css';
 
-const API = (import.meta.env.VITE_NOTICE_SERVICE_URL as string | undefined) ?? 'http://localhost:3014';
+const API = (import.meta.env.VITE_NOTICE_SERVICE_URL as string | undefined) ?? 'http://localhost:3013';
 type Notice = { _id?: string; title: string; body?: string; audience?: string[]; publishedAt?: string; authorId?: string };
 async function listNotices(): Promise<Notice[]> { let response: Response; try { response = await fetch(`${API}/notices`); } catch { throw new Error(`Unable to reach the notice service at ${API}.`); } const body: unknown = await response.json().catch(() => undefined); if (!response.ok) throw new Error(`Notice service returned ${response.status}.`); return Array.isArray(body) ? body.filter((item): item is Notice => typeof item === 'object' && item !== null && typeof (item as Notice).title === 'string') : []; }
 function date(value?: string) { if (!value) return '-'; const parsed = new Date(value); return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); }

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import './ExaminationPage.css'
 
-const API_URL = import.meta.env.VITE_EXAMINATION_SERVICE_URL || 'http://localhost:3008'
+const API_URL = import.meta.env.VITE_EXAMINATION_SERVICE_URL || 'http://localhost:3006'
 
 async function request(path, options) {
   let response

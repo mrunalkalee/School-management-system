@@ -6,8 +6,7 @@ const SERVICE_URLS: Record<string, string> = {
   dashboard: (import.meta.env.VITE_DASHBOARD_SERVICE_URL as string | undefined) ?? 'http://localhost:3016',
   teachers: (import.meta.env.VITE_TEACHER_SERVICE_URL as string | undefined) ?? 'http://localhost:3002',
   students: (import.meta.env.VITE_STUDENT_SERVICE_URL as string | undefined) ?? 'http://localhost:3001',
-  transport: (import.meta.env.VITE_TRANSPORT_SERVICE_URL as string | undefined) ?? 'http://localhost:3012',
-  auth: (import.meta.env.VITE_AUTH_SERVICE_URL as string | undefined) ?? 'http://localhost:3001',
+  transport: (import.meta.env.VITE_TRANSPORT_SERVICE_URL as string | undefined) ?? 'http://localhost:3015',
 };
 
 export function ReferenceScreen({ title, subtitle, activeNav, endpoint, method = 'GET', children }: ScreenProps) {

@@ -2,18 +2,19 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { AppShell } from '../components/layout/AppShell';
 import './Examinations.css';
 
-const SERVICE_URL = (import.meta.env.VITE_EXAMINATION_SERVICE_URL as string | undefined) ?? 'http://localhost:3008';
+const SERVICE_URL = (import.meta.env.VITE_EXAMINATION_SERVICE_URL as string | undefined) ?? 'http://localhost:3006';
 
 type Examination = {
   _id?: string;
   classId: string;
-  subject?: string;
-  title?: string;
-  date?: string;
-  results?: unknown[];
+  subjectId?: string;
+  name?: string;
+  examDate?: string;
+  maxMarks?: number;
+  examType?: 'unit-test' | 'midterm' | 'final' | 'online-test';
 };
 
-type ExaminationInput = Pick<Examination, 'classId' | 'subject' | 'title' | 'date'>;
+type ExaminationInput = Required<Pick<Examination, 'classId' | 'subjectId' | 'name' | 'examDate' | 'maxMarks' | 'examType'>>;
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
@@ -42,7 +43,7 @@ function formatDate(value?: string): string {
 }
 
 function statusFor(examination: Examination): 'Scheduled' | 'Completed' {
-  return examination.date && new Date(examination.date).getTime() < Date.now() ? 'Completed' : 'Scheduled';
+  return examination.examDate && new Date(examination.examDate).getTime() < Date.now() ? 'Completed' : 'Scheduled';
 }
 
 export function Examinations() {
@@ -56,7 +57,7 @@ export function Examinations() {
 
   async function refresh() {
     setError(null);
-    try { setExaminations(getExaminations(await request<unknown>('/examinations'))); }
+    try { setExaminations(getExaminations(await request<unknown>('/exams'))); }
     catch (reason) { setError(reason instanceof Error ? reason.message : 'Unable to load examinations.'); }
     finally { setIsLoading(false); }
   }
@@ -72,14 +73,16 @@ export function Examinations() {
     const form = new FormData(event.currentTarget);
     const input: ExaminationInput = {
       classId: String(form.get('classId') ?? '').trim(),
-      subject: String(form.get('subject') ?? '').trim(),
-      title: String(form.get('title') ?? '').trim(),
-      date: String(form.get('date') ?? ''),
+      subjectId: String(form.get('subjectId') ?? '').trim(),
+      name: String(form.get('name') ?? '').trim(),
+      examDate: String(form.get('examDate') ?? ''),
+      maxMarks: Number(form.get('maxMarks') ?? 0),
+      examType: String(form.get('examType') ?? '') as ExaminationInput['examType'],
     };
-    if (!input.classId) return;
+    if (!input.classId || !input.subjectId || !input.name || !input.examDate || input.maxMarks < 1 || !input.examType) return;
     setIsSaving(true);
     try {
-      const created = await request<Examination>('/examinations', { method: 'POST', body: JSON.stringify({ data: input }) });
+      const created = await request<Examination>('/exams', { method: 'POST', body: JSON.stringify(input) });
       setExaminations((current) => [...current, created]);
       setIsModalOpen(false);
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'Unable to create examination.'); }
@@ -87,7 +90,7 @@ export function Examinations() {
   }
 
   return (
-    <AppShell title="Examinations & Results" subtitle="Manage test schedules, publish report cards, and track academic metrics." activeNav="Examinations" showNavIcons>
+    <AppShell title="Examinations & Results" subtitle="Manage exam schedules and enter marks for a specific exam." activeNav="Examinations" showNavIcons>
       <div className="examination-metrics" aria-label="Examination metrics">
         <Metric label="Upcoming Exams" value={String(examinations.length - completed)} detail="From the examination service" />
         <Metric label="Completed Exams" value={String(completed)} detail="Based on exam dates" />

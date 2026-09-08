@@ -1,2 +1,2 @@
 import { ReferenceScreen } from './ReferenceScreens';
-export default function Transport() { return <ReferenceScreen title="Transport" subtitle="Monitor routes, vehicles, and transport operations." activeNav="Transport" endpoint="transport/transports" />; }
+export default function Transport() { return <ReferenceScreen title="Transport" subtitle="Monitor routes, vehicles, and transport operations." activeNav="Transport" endpoint="transport/routes" />; }

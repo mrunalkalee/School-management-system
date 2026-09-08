@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { AppShell } from '../components/layout/AppShell';
 import './Admission.css';
 
-const SERVICE_URL = (import.meta.env.VITE_ADMISSION_SERVICE_URL as string | undefined) ?? 'http://localhost:3004';
+const SERVICE_URL = (import.meta.env.VITE_ADMISSION_SERVICE_URL as string | undefined) ?? 'http://localhost:3011';
 
 type AdmissionRecord = {
   _id?: string;

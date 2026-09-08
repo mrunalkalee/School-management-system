@@ -2,19 +2,20 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { AppShell } from '../components/layout/AppShell';
 import './AssignmentBoard.css';
 
-const SERVICE_URL = (import.meta.env.VITE_ASSIGNMENT_SERVICE_URL as string | undefined) ?? 'http://localhost:3007';
+const SERVICE_URL = (import.meta.env.VITE_ASSIGNMENT_SERVICE_URL as string | undefined) ?? 'http://localhost:3008';
 
 type Assignment = {
   _id?: string;
   classId: string;
-  subject?: string;
+  subjectId?: string;
+  description?: string;
   title?: string;
   dueDate?: string;
   teacherId?: string;
   submissions?: unknown[];
 };
 
-type AssignmentInput = Pick<Assignment, 'classId' | 'subject' | 'title' | 'dueDate' | 'teacherId'>;
+type AssignmentInput = Required<Pick<Assignment, 'classId' | 'subjectId' | 'title' | 'description' | 'dueDate' | 'teacherId'>>;
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
@@ -66,10 +67,10 @@ export function AssignmentBoard() {
   useEffect(() => { void refresh(); }, []);
 
   const classes = useMemo(() => [...new Set(assignments.map((assignment) => assignment.classId))].sort(), [assignments]);
-  const subjects = useMemo(() => [...new Set(assignments.map((assignment) => assignment.subject).filter((subject): subject is string => Boolean(subject)))].sort(), [assignments]);
+  const subjects = useMemo(() => [...new Set(assignments.map((assignment) => assignment.subjectId).filter((subject): subject is string => Boolean(subject)))].sort(), [assignments]);
   const visibleAssignments = useMemo(() => assignments.filter((assignment) => {
-    const searchable = `${assignment.title ?? ''} ${assignment.subject ?? ''} ${assignment.classId}`.toLowerCase();
-    return searchable.includes(search.toLowerCase()) && (!classFilter || assignment.classId === classFilter) && (!subjectFilter || assignment.subject === subjectFilter);
+    const searchable = `${assignment.title ?? ''} ${assignment.description ?? ''} ${assignment.subjectId ?? ''} ${assignment.classId}`.toLowerCase();
+    return searchable.includes(search.toLowerCase()) && (!classFilter || assignment.classId === classFilter) && (!subjectFilter || assignment.subjectId === subjectFilter);
   }), [assignments, classFilter, search, subjectFilter]);
   const overdue = assignments.filter(isOverdue).length;
 
@@ -78,16 +79,17 @@ export function AssignmentBoard() {
     const form = new FormData(event.currentTarget);
     const input: AssignmentInput = {
       title: String(form.get('title') ?? '').trim(),
-      subject: String(form.get('subject') ?? '').trim(),
+      subjectId: String(form.get('subjectId') ?? '').trim(),
+      description: String(form.get('description') ?? '').trim(),
       classId: String(form.get('classId') ?? '').trim(),
       dueDate: String(form.get('dueDate') ?? ''),
       teacherId: String(form.get('teacherId') ?? '').trim(),
     };
-    if (!input.classId) return;
+    if (!input.classId || !input.subjectId || !input.title || !input.description || !input.dueDate || !input.teacherId) return;
     setIsSaving(true);
     setError(null);
     try {
-      const created = await request<Assignment>('/assignments', { method: 'POST', body: JSON.stringify({ data: input }) });
+      const created = await request<Assignment>('/assignments', { method: 'POST', body: JSON.stringify(input) });
       setAssignments((current) => [...current, created]);
       setIsCreateOpen(false);
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'Unable to create assignment.'); }

@@ -5,16 +5,16 @@ import './LeaveRequests.css';
 const SERVICE_URL = (import.meta.env.VITE_LEAVE_SERVICE_URL as string | undefined) ?? 'http://localhost:3010';
 const TABS = ['all', 'pending', 'approved', 'rejected'] as const;
 type Tab = (typeof TABS)[number];
-type LeaveRequest = { _id?: string; userId: string; role?: string; from?: string; to?: string; reason?: string; status?: string };
+type LeaveRequest = { _id?: string; requesterId: string; requesterType: 'student' | 'teacher'; fromDate?: string; toDate?: string; reason?: string; status?: 'pending' | 'approved' | 'rejected'; reviewedBy?: string };
 
 async function listLeaves(): Promise<LeaveRequest[]> {
   let response: Response;
-  try { response = await fetch(`${SERVICE_URL}/leaves`); }
+  try { response = await fetch(`${SERVICE_URL}/leave-requests`); }
   catch { throw new Error(`Unable to reach the leave service at ${SERVICE_URL}.`); }
   const body: unknown = await response.json().catch(() => undefined);
   if (!response.ok) throw new Error(`Leave service returned ${response.status}.`);
   if (!Array.isArray(body)) return [];
-  return body.filter((item): item is LeaveRequest => typeof item === 'object' && item !== null && typeof (item as LeaveRequest).userId === 'string');
+  return body.filter((item): item is LeaveRequest => typeof item === 'object' && item !== null && typeof (item as LeaveRequest).requesterId === 'string');
 }
 
 function dateValue(value?: string): number | undefined {
@@ -30,12 +30,12 @@ function formatDate(value?: string): string {
 }
 
 function daysBetween(request: LeaveRequest): number | string {
-  const from = dateValue(request.from);
-  const to = dateValue(request.to);
+  const from = dateValue(request.fromDate);
+  const to = dateValue(request.toDate);
   return from !== undefined && to !== undefined ? Math.max(1, Math.round((to - from) / 86400000) + 1) : '-';
 }
 
-function statusOf(request: LeaveRequest): string { return request.status?.toLowerCase() || 'pending'; }
+function statusOf(request: LeaveRequest): string { return request.status ?? 'pending'; }
 
 export function LeaveRequests() {
   const [requests, setRequests] = useState<LeaveRequest[]>([]);
@@ -48,11 +48,11 @@ export function LeaveRequests() {
     void listLeaves().then(setRequests).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : 'Unable to load leave requests.')).finally(() => setIsLoading(false));
   }, []);
 
-  const roles = useMemo(() => [...new Set(requests.map((request) => request.role).filter((role): role is string => Boolean(role)))].sort(), [requests]);
-  const visible = useMemo(() => requests.filter((request) => (tab === 'all' || statusOf(request) === tab) && (!department || request.role === department)), [department, requests, tab]);
+  const roles = useMemo(() => ['student', 'teacher'], []);
+  const visible = useMemo(() => requests.filter((request) => (tab === 'all' || statusOf(request) === tab) && (!department || request.requesterType === department)), [department, requests, tab]);
   const pending = requests.filter((request) => statusOf(request) === 'pending').length;
-  const approvedToday = requests.filter((request) => statusOf(request) === 'approved' && dateValue(request.from) !== undefined && dateValue(request.from)! <= Date.now() && dateValue(request.to) !== undefined && dateValue(request.to)! >= Date.now()).length;
-  const onLeaveToday = requests.filter((request) => ['approved', 'on leave'].includes(statusOf(request)) && dateValue(request.from) !== undefined && dateValue(request.from)! <= Date.now() && dateValue(request.to) !== undefined && dateValue(request.to)! >= Date.now()).length;
+  const approvedToday = requests.filter((request) => statusOf(request) === 'approved' && dateValue(request.fromDate) !== undefined && dateValue(request.fromDate)! <= Date.now() && dateValue(request.toDate) !== undefined && dateValue(request.toDate)! >= Date.now()).length;
+  const onLeaveToday = requests.filter((request) => statusOf(request) === 'approved' && dateValue(request.fromDate) !== undefined && dateValue(request.fromDate)! <= Date.now() && dateValue(request.toDate) !== undefined && dateValue(request.toDate)! >= Date.now()).length;
   const rejected = requests.filter((request) => statusOf(request) === 'rejected').length;
   const rejectionRate = requests.length ? Math.round((rejected / requests.length) * 100) : 0;
 
@@ -73,7 +73,7 @@ export function LeaveRequests() {
         </div>
         {isLoading && <p className="leave-state">Loading leave requests...</p>}
         {!isLoading && error && <p className="leave-state leave-state--error" role="alert">{error}</p>}
-        {!isLoading && !error && <div className="leave-table-wrap"><table className="leave-table"><thead><tr><th>Applicant Name</th><th>Role</th><th>Leave Type</th><th>From Date</th><th>To Date</th><th>Days</th><th>Actions</th></tr></thead><tbody>{visible.map((request) => <tr key={request._id ?? `${request.userId}-${request.from}-${request.to}`}><th>{request.userId}</th><td>{request.role ?? '-'}</td><td>{request.reason ?? '-'}</td><td>{formatDate(request.from)}</td><td>{formatDate(request.to)}</td><td>{daysBetween(request)}</td><td><span className={`leave-badge leave-badge--${statusOf(request)}`}>{statusOf(request)}</span></td></tr>)}</tbody></table>{visible.length === 0 && <p className="leave-state">No leave requests match this view.</p>}</div>}
+        {!isLoading && !error && <div className="leave-table-wrap"><table className="leave-table"><thead><tr><th>Requester ID</th><th>Requester Type</th><th>Reason</th><th>From Date</th><th>To Date</th><th>Days</th><th>Status</th></tr></thead><tbody>{visible.map((request) => <tr key={request._id ?? `${request.requesterId}-${request.fromDate}-${request.toDate}`}><th>{request.requesterId}</th><td>{request.requesterType}</td><td>{request.reason ?? '-'}</td><td>{formatDate(request.fromDate)}</td><td>{formatDate(request.toDate)}</td><td>{daysBetween(request)}</td><td><span className={`leave-badge leave-badge--${statusOf(request)}`}>{statusOf(request)}</span></td></tr>)}</tbody></table>{visible.length === 0 && <p className="leave-state">No leave requests match this view.</p>}</div>}
       </section>
     </AppShell>
   );
