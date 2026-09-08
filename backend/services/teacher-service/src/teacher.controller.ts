@@ -1,6 +1,8 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
+import { Roles } from './roles.decorator';
+import { RolesGuard } from './roles.guard';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
 import { TeacherService } from './teacher.service';
 
@@ -11,6 +13,10 @@ export class TeacherController {
   constructor(private readonly teacherService: TeacherService) {}
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may create teachers.' })
   @ApiOperation({ summary: 'Create a teacher' })
   @ApiResponse({ status: 201, description: 'Teacher created successfully' })
   @ApiResponse({ status: 409, description: 'Email already exists' })
@@ -34,6 +40,10 @@ export class TeacherController {
   }
 
   @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may update teachers.' })
   @ApiOperation({ summary: 'Update a teacher' })
   @ApiResponse({ status: 200, description: 'Teacher updated successfully' })
   @ApiResponse({ status: 404, description: 'Teacher not found' })
@@ -43,6 +53,10 @@ export class TeacherController {
   }
 
   @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may delete teachers.' })
   @ApiOperation({ summary: 'Soft-delete a teacher' })
   @ApiResponse({ status: 200, description: 'Teacher marked inactive successfully' })
   @ApiResponse({ status: 404, description: 'Teacher not found' })
