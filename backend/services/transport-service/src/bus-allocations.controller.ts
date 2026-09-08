@@ -15,12 +15,23 @@ export class BusAllocationsController {
   @ApiResponse({ status: 400, description: 'Invalid payload or selected stop is not on the route' })
   @ApiResponse({ status: 404, description: 'Student or route not found' })
   @ApiResponse({ status: 503, description: 'Student service unavailable' })
-  allocate(@Body() dto: AllocateStudentDto) { return this.busAllocationsService.allocate(dto); }
+  allocate(@Body() dto: AllocateStudentDto) {
+    return this.busAllocationsService.allocate(dto);
+  }
+
+  @Get('allocations')
+  @ApiOperation({ summary: 'List all current student bus allocations' })
+  @ApiResponse({ status: 200, description: 'Bus allocations returned successfully' })
+  findAll() {
+    return this.busAllocationsService.findAll();
+  }
 
   @Get('student/:studentId')
   @ApiOperation({ summary: 'Get the current transport allocation for a student' })
   @ApiParam({ name: 'studentId', example: '66b5d38acd65f26429ab4ce1' })
   @ApiResponse({ status: 200, description: 'Student allocation returned successfully' })
   @ApiResponse({ status: 404, description: 'No allocation exists for the student' })
-  findStudentAllocation(@Param('studentId') studentId: string) { return this.busAllocationsService.findStudentAllocation(studentId); }
+  findStudentAllocation(@Param('studentId') studentId: string) {
+    return this.busAllocationsService.findStudentAllocation(studentId);
+  }
 }

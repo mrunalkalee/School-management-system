@@ -38,6 +38,10 @@ export class BusAllocationsService {
     return allocation;
   }
 
+  async findAll(): Promise<BusAllocationDocument[]> {
+    return this.allocationModel.find().sort({ createdAt: -1 }).exec();
+  }
+
   private async remote<T>(baseUrl: string, id: string): Promise<T> {
     try {
       return (await firstValueFrom(this.httpService.get<T>(`${baseUrl}/${encodeURIComponent(id)}`))).data;
