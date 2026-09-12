@@ -8,6 +8,7 @@ import { SchoolClass, SchoolClassSchema } from './class.schema';
 import { Subject, SubjectSchema } from './subject.schema';
 import { SubjectsController } from './subjects.controller';
 import { SubjectsService } from './subjects.service';
+import { RolesGuard } from './roles.guard';
 
 @Module({
   imports: [
@@ -25,6 +26,6 @@ import { SubjectsService } from './subjects.service';
     ]),
   ],
   controllers: [ClassesController, SubjectsController, HealthController],
-  providers: [ClassesService, SubjectsService],
+  providers: [ClassesService, SubjectsService, RolesGuard],
 })
 export class ClassSubjectModule {}

@@ -6,6 +6,7 @@ import { Assignment, AssignmentSchema } from './assignment.schema';
 import { AssignmentsController, HealthController, SubmissionsController } from './assignments.controller';
 import { AssignmentsService } from './assignments.service';
 import { Submission, SubmissionSchema } from './submission.schema';
+import { RolesGuard } from './roles.guard';
 
 @Module({
   imports: [
@@ -21,6 +22,6 @@ import { Submission, SubmissionSchema } from './submission.schema';
     ]),
   ],
   controllers: [AssignmentsController, SubmissionsController, HealthController],
-  providers: [AssignmentsService],
+  providers: [AssignmentsService, RolesGuard],
 })
 export class AssignmentModule {}

@@ -8,6 +8,7 @@ import { FeeStructuresService } from './fee-structures.service';
 import { Payment, PaymentSchema } from './payment.schema';
 import { PaymentsController } from './payments.controller';
 import { PaymentsService } from './payments.service';
+import { RolesGuard } from './roles.guard';
 
 @Module({
   imports: [
@@ -23,6 +24,6 @@ import { PaymentsService } from './payments.service';
     ]),
   ],
   controllers: [FeeStructuresController, PaymentsController, HealthController],
-  providers: [FeeStructuresService, PaymentsService],
+  providers: [FeeStructuresService, PaymentsService, RolesGuard],
 })
 export class FeeModule {}

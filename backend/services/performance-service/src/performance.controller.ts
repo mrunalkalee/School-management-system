@@ -1,5 +1,5 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { PerformanceService } from './performance.service';
 
@@ -28,6 +28,17 @@ const studentPerformanceSchema: SchemaObject = {
 
 // TODO: verify JWT via API Gateway headers once auth-service exists.
 @ApiTags('Performance')
+@ApiHeader({
+  name: 'x-user-id',
+  required: false,
+  description: 'May be set by the API Gateway after JWT verification. This read-only service does not enforce it.',
+})
+@ApiHeader({
+  name: 'x-user-role',
+  required: false,
+  enum: ['admin', 'teacher', 'student', 'parent'],
+  description: 'May be set by the API Gateway after JWT verification. All roles may access this read-only service.',
+})
 @Controller('performance')
 export class PerformanceController {
   constructor(private readonly performanceService: PerformanceService) {}

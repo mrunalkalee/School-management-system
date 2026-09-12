@@ -1,7 +1,9 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiHeader, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateFeeStructureDto } from './dto/create-fee-structure.dto';
 import { FeeStructuresService } from './fee-structures.service';
+import { Roles } from './roles.decorator';
+import { RolesGuard } from './roles.guard';
 
 // TODO: verify JWT via API Gateway headers once auth-service exists.
 @ApiTags('Fee Structures')
@@ -10,6 +12,10 @@ export class FeeStructuresController {
   constructor(private readonly feeStructuresService: FeeStructuresService) {}
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may create fee structures.' })
   @ApiOperation({ summary: 'Create a fee structure after validating its class' })
   @ApiResponse({ status: 201, description: 'Fee structure created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid fee structure payload' })

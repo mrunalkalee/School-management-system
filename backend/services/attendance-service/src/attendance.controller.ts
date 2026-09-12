@@ -1,7 +1,10 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CurrentUser, GatewayUser } from './current-user.decorator';
 import { MarkAttendanceDto } from './dto/mark-attendance.dto';
 import { UpdateAttendanceDto } from './dto/update-attendance.dto';
+import { Roles } from './roles.decorator';
+import { RolesGuard } from './roles.guard';
 import { AttendanceService } from './attendance.service';
 
 // TODO: verify JWT via API Gateway headers once auth-service exists.
@@ -11,13 +14,20 @@ export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles('admin', 'teacher')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification; used as markedBy when x-user-role is present.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin and teacher may mark attendance.' })
   @ApiOperation({ summary: 'Bulk mark attendance, validating the class and every student' })
   @ApiResponse({ status: 201, description: 'Attendance records created or updated successfully' })
   @ApiResponse({ status: 400, description: 'Invalid attendance payload' })
   @ApiResponse({ status: 404, description: 'Class or student not found' })
   @ApiResponse({ status: 503, description: 'Class or student service unavailable' })
-  mark(@Body() markAttendanceDto: MarkAttendanceDto) {
-    return this.attendanceService.mark(markAttendanceDto);
+  mark(@Body() markAttendanceDto: MarkAttendanceDto, @CurrentUser() currentUser: GatewayUser) {
+    if (!currentUser.role) return this.attendanceService.mark(markAttendanceDto);
+
+    const { markedBy: _manualMarkedBy, ...attendance } = markAttendanceDto;
+    return this.attendanceService.mark({ ...attendance, markedBy: currentUser.id });
   }
 
   @Get()
@@ -38,13 +48,24 @@ export class AttendanceController {
   }
 
   @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin', 'teacher')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification; used as markedBy when x-user-role is present.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin and teacher may update attendance.' })
   @ApiOperation({ summary: 'Update an attendance record status or manual marker' })
   @ApiParam({ name: 'id', example: '66b5d38acd65f26429ab4ce3' })
   @ApiResponse({ status: 200, description: 'Attendance record updated successfully' })
   @ApiResponse({ status: 400, description: 'Invalid attendance update payload' })
   @ApiResponse({ status: 404, description: 'Attendance record not found' })
-  update(@Param('id') id: string, @Body() updateAttendanceDto: UpdateAttendanceDto) {
-    return this.attendanceService.update(id, updateAttendanceDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateAttendanceDto: UpdateAttendanceDto,
+    @CurrentUser() currentUser: GatewayUser,
+  ) {
+    if (!currentUser.role) return this.attendanceService.update(id, updateAttendanceDto);
+
+    const { markedBy: _manualMarkedBy, ...attendance } = updateAttendanceDto;
+    return this.attendanceService.update(id, { ...attendance, markedBy: currentUser.id });
   }
 }
 

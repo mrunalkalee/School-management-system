@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AttendanceController, HealthController } from './attendance.controller';
 import { Attendance, AttendanceSchema } from './attendance.schema';
 import { AttendanceService } from './attendance.service';
+import { RolesGuard } from './roles.guard';
 
 @Module({
   imports: [
@@ -19,6 +20,6 @@ import { AttendanceService } from './attendance.service';
     MongooseModule.forFeature([{ name: Attendance.name, schema: AttendanceSchema }]),
   ],
   controllers: [AttendanceController, HealthController],
-  providers: [AttendanceService],
+  providers: [AttendanceService, RolesGuard],
 })
 export class AttendanceModule {}

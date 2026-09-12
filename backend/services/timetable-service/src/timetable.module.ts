@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { HealthController, TimetableController } from './timetable.controller';
 import { Timetable, TimetableSchema } from './timetable.schema';
 import { TimetableService } from './timetable.service';
+import { RolesGuard } from './roles.guard';
 
 @Module({
   imports: [
@@ -19,6 +20,6 @@ import { TimetableService } from './timetable.service';
     MongooseModule.forFeature([{ name: Timetable.name, schema: TimetableSchema }]),
   ],
   controllers: [TimetableController, HealthController],
-  providers: [TimetableService],
+  providers: [TimetableService, RolesGuard],
 })
 export class TimetableModule {}

@@ -1,8 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiHeader, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateTimetableDto, DayOfWeek } from './dto/create-timetable.dto';
 import { UpdateTimetableDto } from './dto/update-timetable.dto';
 import { TimetableService } from './timetable.service';
+import { Roles } from './roles.decorator';
+import { RolesGuard } from './roles.guard';
 
 // TODO: verify JWT via API Gateway headers once auth-service exists
 @ApiTags('Timetable')
@@ -11,6 +13,10 @@ export class TimetableController {
   constructor(private readonly timetableService: TimetableService) {}
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may create timetables.' })
   @ApiOperation({ summary: 'Create a timetable and validate its class and teachers' })
   @ApiResponse({ status: 201, description: 'Timetable created successfully' })
   @ApiResponse({ status: 404, description: 'Class or teacher not found' })
@@ -38,6 +44,10 @@ export class TimetableController {
   }
 
   @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may update timetables.' })
   @ApiOperation({ summary: 'Update a timetable and validate changed references' })
   @ApiResponse({ status: 200, description: 'Timetable updated successfully' })
   @ApiResponse({ status: 404, description: 'Timetable, class, or teacher not found' })
@@ -48,6 +58,10 @@ export class TimetableController {
   }
 
   @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may delete timetables.' })
   @ApiOperation({ summary: 'Delete a timetable' })
   @ApiResponse({ status: 200, description: 'Timetable deleted successfully' })
   @ApiResponse({ status: 404, description: 'Timetable not found' })

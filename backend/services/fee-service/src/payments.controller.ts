@@ -1,7 +1,9 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RecordPaymentDto } from './dto/record-payment.dto';
 import { PaymentsService } from './payments.service';
+import { Roles } from './roles.decorator';
+import { RolesGuard } from './roles.guard';
 
 // TODO: verify JWT via API Gateway headers once auth-service exists.
 @ApiTags('Payments')
@@ -10,6 +12,10 @@ export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Post('payments')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may record payments.' })
   @ApiOperation({ summary: 'Record a payment and compute paid or partial status from the fee balance' })
   @ApiResponse({ status: 201, description: 'Payment recorded successfully' })
   @ApiResponse({ status: 400, description: 'Invalid payment payload or payment exceeds the balance' })

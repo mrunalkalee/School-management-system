@@ -1,9 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Patch, Post, Query, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { ApiBody, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AssignmentsService } from './assignments.service';
+import { CurrentUser, GatewayUser } from './current-user.decorator';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
 import { GradeSubmissionDto } from './dto/grade-submission.dto';
 import { SubmitAssignmentDto } from './dto/submit-assignment.dto';
+import { Roles } from './roles.decorator';
+import { RolesGuard } from './roles.guard';
 
 // TODO: verify JWT via API Gateway headers once auth-service exists.
 @ApiTags('Assignments')
@@ -12,6 +15,10 @@ export class AssignmentsController {
   constructor(private readonly assignmentsService: AssignmentsService) {}
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles('admin', 'teacher')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin and teacher may create assignments.' })
   @ApiOperation({ summary: 'Create an assignment after validating its class' })
   @ApiResponse({ status: 201, description: 'Assignment created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid assignment payload' })
@@ -46,14 +53,26 @@ export class AssignmentsController {
   findOne(@Param('id') id: string) { return this.assignmentsService.findOne(id); }
 
   @Post(':id/submit')
+  @UseGuards(RolesGuard)
+  @Roles('student', 'admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification; used as studentId when x-user-role is present.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only student and admin may submit assignments.' })
   @ApiOperation({ summary: 'Create or update a student submission after validating the student' })
   @ApiParam({ name: 'id', description: 'Assignment ID', example: '66b5d38acd65f26429ab4ce5' })
   @ApiBody({ type: SubmitAssignmentDto })
   @ApiResponse({ status: 201, description: 'Submission created or updated successfully' })
   @ApiResponse({ status: 404, description: 'Assignment or student not found' })
   @ApiResponse({ status: 503, description: 'Student service unavailable' })
-  submit(@Param('id') id: string, @Body() submitAssignmentDto: SubmitAssignmentDto) {
-    return this.assignmentsService.submit(id, submitAssignmentDto);
+  submit(
+    @Param('id') id: string,
+    @Body() submitAssignmentDto: SubmitAssignmentDto,
+    @CurrentUser() currentUser: GatewayUser,
+  ) {
+    if (!currentUser.role) return this.assignmentsService.submit(id, submitAssignmentDto);
+    if (!currentUser.id) throw new UnauthorizedException('x-user-id is required when x-user-role is present');
+
+    const { studentId: _bodyStudentId, ...submission } = submitAssignmentDto;
+    return this.assignmentsService.submit(id, { ...submission, studentId: currentUser.id });
   }
 }
 
@@ -63,6 +82,10 @@ export class SubmissionsController {
   constructor(private readonly assignmentsService: AssignmentsService) {}
 
   @Patch(':id/grade')
+  @UseGuards(RolesGuard)
+  @Roles('admin', 'teacher')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin and teacher may grade submissions.' })
   @ApiOperation({ summary: 'Grade a submission and optionally leave feedback' })
   @ApiParam({ name: 'id', description: 'Submission ID', example: '66b5d38acd65f26429ab4ce6' })
   @ApiResponse({ status: 200, description: 'Submission graded successfully' })

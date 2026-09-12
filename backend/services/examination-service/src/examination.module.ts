@@ -6,6 +6,7 @@ import { Exam, ExamSchema } from './exam.schema';
 import { ExamsController, HealthController } from './exams.controller';
 import { ExamsService } from './exams.service';
 import { Marks, MarksSchema } from './marks.schema';
+import { RolesGuard } from './roles.guard';
 
 @Module({
   imports: [
@@ -21,6 +22,6 @@ import { Marks, MarksSchema } from './marks.schema';
     ]),
   ],
   controllers: [ExamsController, HealthController],
-  providers: [ExamsService],
+  providers: [ExamsService, RolesGuard],
 })
 export class ExaminationModule {}

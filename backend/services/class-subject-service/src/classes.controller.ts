@@ -1,9 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AssignStudentsDto } from './dto/assign-students.dto';
 import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
 import { ClassesService } from './classes.service';
+import { Roles } from './roles.decorator';
+import { RolesGuard } from './roles.guard';
 
 // TODO: verify JWT via API Gateway headers once auth-service exists
 @ApiTags('Classes')
@@ -12,6 +14,10 @@ export class ClassesController {
   constructor(private readonly classesService: ClassesService) {}
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may create classes.' })
   @ApiOperation({ summary: 'Create a class and validate its class teacher' })
   @ApiResponse({ status: 201, description: 'Class created successfully' })
   @ApiResponse({ status: 404, description: 'Teacher not found' })
@@ -36,6 +42,10 @@ export class ClassesController {
   }
 
   @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may update classes.' })
   @ApiOperation({ summary: 'Update a class' })
   @ApiResponse({ status: 200, description: 'Class updated successfully' })
   @ApiResponse({ status: 404, description: 'Class or teacher not found' })
@@ -45,6 +55,10 @@ export class ClassesController {
   }
 
   @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may delete classes.' })
   @ApiOperation({ summary: 'Delete a class' })
   @ApiResponse({ status: 200, description: 'Class deleted successfully' })
   @ApiResponse({ status: 404, description: 'Class not found' })
@@ -53,6 +67,10 @@ export class ClassesController {
   }
 
   @Post(':id/assign-students')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may assign students to a class.' })
   @ApiOperation({ summary: 'Validate and assign students to a class' })
   @ApiResponse({ status: 201, description: 'Students assigned successfully' })
   @ApiResponse({ status: 404, description: 'Class or student not found' })
