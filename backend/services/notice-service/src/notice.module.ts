@@ -8,6 +8,7 @@ import { EventsService } from './events.service';
 import { Notice, NoticeSchema } from './notice.schema';
 import { HealthController, NoticesController } from './notices.controller';
 import { NoticesService } from './notices.service';
+import { RolesGuard } from './roles.guard';
 
 @Module({
   imports: [
@@ -16,6 +17,6 @@ import { NoticesService } from './notices.service';
     MongooseModule.forFeature([{ name: Notice.name, schema: NoticeSchema }, { name: Event.name, schema: EventSchema }]),
   ],
   controllers: [NoticesController, EventsController, HealthController],
-  providers: [NoticesService, EventsService],
+  providers: [NoticesService, EventsService, RolesGuard],
 })
 export class NoticeModule {}

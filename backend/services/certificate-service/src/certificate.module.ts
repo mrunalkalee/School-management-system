@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Certificate, CertificateSchema } from './certificate.schema';
 import { CertificatesController, HealthController } from './certificates.controller';
 import { CertificatesService } from './certificates.service';
+import { RolesGuard } from './roles.guard';
 
 @Module({
   imports: [
@@ -13,6 +14,6 @@ import { CertificatesService } from './certificates.service';
     MongooseModule.forFeature([{ name: Certificate.name, schema: CertificateSchema }]),
   ],
   controllers: [CertificatesController, HealthController],
-  providers: [CertificatesService],
+  providers: [CertificatesService, RolesGuard],
 })
 export class CertificateModule {}

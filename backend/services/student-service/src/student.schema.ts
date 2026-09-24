@@ -60,7 +60,11 @@ export class Student {
   @Prop({ default: true })
   isActive: boolean;
 
-  // Set by auth-service once it exists; nullable until that integration is available.
+  // Auth-service user ID for this profile. A user can be linked to one active student profile.
+  @Prop({ type: String, unique: true, sparse: true, trim: true })
+  authUserId?: string;
+
+  // Legacy field retained for existing documents; use authUserId for all new links.
   @Prop({ type: String, default: null })
   userId?: string | null;
 }

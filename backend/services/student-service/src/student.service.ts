@@ -38,6 +38,15 @@ export class StudentService {
     return student;
   }
 
+  async findByAuthUserId(authUserId: string): Promise<StudentDocument> {
+    const student = await this.studentModel.findOne({
+      isActive: true,
+      $or: [{ authUserId }, { userId: authUserId }],
+    }).exec();
+    if (!student) throw new NotFoundException(`Student profile for auth user ${authUserId} was not found`);
+    return student;
+  }
+
   async update(id: string, updateStudentDto: UpdateStudentDto): Promise<StudentDocument> {
     await this.findOne(id);
     try {

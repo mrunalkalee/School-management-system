@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { HealthController, LeaveController } from './leave.controller';
 import { LeaveService } from './leave.service';
 import { LeaveRequest, LeaveRequestSchema } from './leave-request.schema';
+import { RolesGuard } from './roles.guard';
 
 @Module({
   imports: [
@@ -17,6 +18,6 @@ import { LeaveRequest, LeaveRequestSchema } from './leave-request.schema';
     MongooseModule.forFeature([{ name: LeaveRequest.name, schema: LeaveRequestSchema }]),
   ],
   controllers: [LeaveController, HealthController],
-  providers: [LeaveService],
+  providers: [LeaveService, RolesGuard],
 })
 export class LeaveModule {}

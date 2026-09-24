@@ -31,6 +31,14 @@ export class TeacherController {
     return this.teacherService.findAll(search);
   }
 
+  @Get('by-auth-user/:authUserId')
+  @ApiOperation({ summary: 'Resolve an active teacher profile by its auth-service user ID' })
+  @ApiResponse({ status: 200, description: 'Teacher profile returned successfully' })
+  @ApiResponse({ status: 404, description: 'Teacher profile not found for auth user' })
+  findByAuthUserId(@Param('authUserId') authUserId: string) {
+    return this.teacherService.findByAuthUserId(authUserId);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get one active teacher for HTTP validation by other services' })
   @ApiResponse({ status: 200, description: 'Teacher returned successfully' })

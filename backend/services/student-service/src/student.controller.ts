@@ -31,6 +31,14 @@ export class StudentController {
     return this.studentService.findAll(classId, search);
   }
 
+  @Get('by-auth-user/:authUserId')
+  @ApiOperation({ summary: 'Resolve an active student profile by its auth-service user ID' })
+  @ApiResponse({ status: 200, description: 'Student profile returned successfully' })
+  @ApiResponse({ status: 404, description: 'Student profile not found for auth user' })
+  findByAuthUserId(@Param('authUserId') authUserId: string) {
+    return this.studentService.findByAuthUserId(authUserId);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get one active student for HTTP validation by other services' })
   @ApiResponse({ status: 200, description: 'Student returned successfully' })

@@ -1,7 +1,9 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { IssueBookDto } from './dto/issue-book.dto';
 import { IssueRecordsService } from './issue-records.service';
+import { Roles } from './roles.decorator';
+import { RolesGuard } from './roles.guard';
 
 @ApiTags('Library - Issue Records')
 @Controller('library')
@@ -9,6 +11,10 @@ export class IssueRecordsController {
   constructor(private readonly issueRecordsService: IssueRecordsService) {}
 
   @Post('issue')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may issue books.' })
   @ApiOperation({ summary: 'Issue a book after validating the student or teacher borrower' })
   @ApiResponse({ status: 201, description: 'Book issued successfully' })
   @ApiResponse({ status: 400, description: 'Invalid payload, unavailable book, or invalid due date' })
@@ -17,6 +23,10 @@ export class IssueRecordsController {
   issue(@Body() issueBookDto: IssueBookDto) { return this.issueRecordsService.issue(issueBookDto); }
 
   @Patch('return/:issueId')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may return books.' })
   @ApiOperation({ summary: 'Return an issued book and calculate a ₹5 per late day fine' })
   @ApiParam({ name: 'issueId', example: '66b5d38acd65f26429ab4ce3' })
   @ApiResponse({ status: 200, description: 'Book returned successfully' })

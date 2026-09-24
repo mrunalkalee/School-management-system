@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiHeader, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateNoticeDto } from './dto/create-notice.dto';
 import { NoticesService } from './notices.service';
 import { TargetRole } from './notice.schema';
+import { Roles } from './roles.decorator';
+import { RolesGuard } from './roles.guard';
 
 // TODO: restrict notice posting to Admin users once auth-service exists.
 @ApiTags('Notices')
@@ -10,6 +12,10 @@ import { TargetRole } from './notice.schema';
 export class NoticesController {
   constructor(private readonly noticesService: NoticesService) {}
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may post notices.' })
   @ApiOperation({ summary: 'Post a notice, validating its target class only when one is supplied' })
   @ApiResponse({ status: 201, description: 'Notice created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid notice payload' })

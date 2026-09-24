@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AdmissionStatus } from './admission.schema';
 import { AdmissionsService } from './admissions.service';
 import { CreateAdmissionDto } from './dto/create-admission.dto';
 import { UpdateAdmissionStatusDto } from './dto/update-admission-status.dto';
+import { Roles } from './roles.decorator';
+import { RolesGuard } from './roles.guard';
 
 // TODO: verify JWT via API Gateway headers once auth-service exists.
 @ApiTags('Admissions')
@@ -34,6 +36,10 @@ export class AdmissionsController {
 
   // TODO (future phase): call student-service's POST /students to auto-create a Student record on approval — cross-service write not wired yet to keep this phase isolated.
   @Patch(':id/status')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may update admission status.' })
   @ApiOperation({ summary: 'Approve or reject an admission application' })
   @ApiParam({ name: 'id', example: '66b5d38acd65f26429ab4ce5' })
   @ApiResponse({ status: 200, description: 'Admission status updated successfully' })

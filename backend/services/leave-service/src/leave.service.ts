@@ -26,6 +26,19 @@ export class LeaveService {
     return new this.leaveRequestModel(createLeaveRequestDto).save();
   }
 
+  async createForAuthUser(
+    authUserId: string,
+    requesterType: RequesterType,
+    leaveRequest: Omit<CreateLeaveRequestDto, 'requesterId' | 'requesterType'>,
+  ): Promise<LeaveRequestDocument> {
+    const requester = await this.remote<{ _id: string }>(
+      `${this.requesterServiceUrl(requesterType)}/by-auth-user`,
+      authUserId,
+      requesterType === RequesterType.Student ? 'Student profile for auth user' : 'Teacher profile for auth user',
+    );
+    return this.create({ ...leaveRequest, requesterId: requester._id, requesterType });
+  }
+
   async findAll(requesterId?: string, status?: LeaveStatus): Promise<LeaveRequestDocument[]> {
     const filter: FilterQuery<LeaveRequest> = {};
     if (requesterId) filter.requesterId = requesterId;

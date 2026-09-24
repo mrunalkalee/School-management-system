@@ -38,6 +38,15 @@ export class TeacherService {
     return teacher;
   }
 
+  async findByAuthUserId(authUserId: string): Promise<TeacherDocument> {
+    const teacher = await this.teacherModel.findOne({
+      isActive: true,
+      $or: [{ authUserId }, { userId: authUserId }],
+    }).exec();
+    if (!teacher) throw new NotFoundException(`Teacher profile for auth user ${authUserId} was not found`);
+    return teacher;
+  }
+
   async update(id: string, updateTeacherDto: UpdateTeacherDto): Promise<TeacherDocument> {
     await this.findOne(id);
     try {

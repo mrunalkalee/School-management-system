@@ -1,7 +1,9 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CertificatesService } from './certificates.service';
 import { CreateCertificateDto } from './dto/create-certificate.dto';
+import { Roles } from './roles.decorator';
+import { RolesGuard } from './roles.guard';
 
 // TODO: verify JWT via API Gateway headers once auth-service exists.
 @ApiTags('Certificates')
@@ -11,6 +13,10 @@ export class CertificatesController {
 
   // TODO (future): generate an actual PDF via pdf-lib/Puppeteer and store in cloud storage.
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may issue certificates.' })
   @ApiOperation({ summary: 'Issue a certificate after validating the student' })
   @ApiResponse({ status: 201, description: 'Certificate issued successfully' })
   @ApiResponse({ status: 400, description: 'Invalid certificate payload' })

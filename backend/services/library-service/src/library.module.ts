@@ -8,6 +8,7 @@ import { BooksService } from './books.service';
 import { IssueRecord, IssueRecordSchema } from './issue-record.schema';
 import { IssueRecordsController } from './issue-records.controller';
 import { IssueRecordsService } from './issue-records.service';
+import { RolesGuard } from './roles.guard';
 
 @Module({
   imports: [
@@ -23,6 +24,6 @@ import { IssueRecordsService } from './issue-records.service';
     ]),
   ],
   controllers: [BooksController, IssueRecordsController, HealthController],
-  providers: [BooksService, IssueRecordsService],
+  providers: [BooksService, IssueRecordsService, RolesGuard],
 })
 export class LibraryModule {}

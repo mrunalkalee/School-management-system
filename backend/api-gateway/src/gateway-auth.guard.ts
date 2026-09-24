@@ -13,7 +13,7 @@ export class GatewayAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<GatewayRequest>();
-    if (this.isPublic(request.path)) return true;
+    if (this.isPublic(request)) return true;
     const authorization = request.headers.authorization;
     if (!authorization?.startsWith('Bearer ')) throw new UnauthorizedException('A Bearer token is required');
     try {
@@ -27,5 +27,10 @@ export class GatewayAuthGuard implements CanActivate {
     }
   }
 
-  private isPublic(path: string): boolean { return path === '/' || path === '/auth' || path.startsWith('/auth/'); }
+  private isPublic(request: Request): boolean {
+    return request.path === '/'
+      || request.path === '/auth'
+      || request.path.startsWith('/auth/')
+      || (request.method === 'POST' && request.path === '/admissions');
+  }
 }

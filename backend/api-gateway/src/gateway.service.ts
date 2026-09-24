@@ -6,10 +6,10 @@ import { Request, Response } from 'express';
 import { firstValueFrom } from 'rxjs';
 
 const ROUTES: Record<string, string> = {
-  students: 'STUDENT_SERVICE_URL', teachers: 'TEACHER_SERVICE_URL', classes: 'CLASS_SERVICE_URL', timetables: 'TIMETABLE_SERVICE_URL',
+  students: 'STUDENT_SERVICE_URL', teachers: 'TEACHER_SERVICE_URL', classes: 'CLASS_SERVICE_URL', subjects: 'CLASS_SERVICE_URL', timetables: 'TIMETABLE_SERVICE_URL',
   attendance: 'ATTENDANCE_SERVICE_URL', exams: 'EXAMINATION_SERVICE_URL', performance: 'PERFORMANCE_SERVICE_URL', assignments: 'ASSIGNMENT_SERVICE_URL',
   fees: 'FEE_SERVICE_URL', 'leave-requests': 'LEAVE_SERVICE_URL', admissions: 'ADMISSION_SERVICE_URL', certificates: 'CERTIFICATE_SERVICE_URL',
-  notices: 'NOTICE_SERVICE_URL', library: 'LIBRARY_SERVICE_URL', transport: 'TRANSPORT_SERVICE_URL', dashboard: 'DASHBOARD_SERVICE_URL', auth: 'AUTH_SERVICE_URL',
+  notices: 'NOTICE_SERVICE_URL', events: 'NOTICE_SERVICE_URL', library: 'LIBRARY_SERVICE_URL', transport: 'TRANSPORT_SERVICE_URL', dashboard: 'DASHBOARD_SERVICE_URL', auth: 'AUTH_SERVICE_URL',
 };
 
 @Injectable()

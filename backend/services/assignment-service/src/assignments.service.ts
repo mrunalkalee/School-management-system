@@ -75,6 +75,19 @@ export class AssignmentsService {
     ).exec();
   }
 
+  async submitForAuthUser(
+    assignmentId: string,
+    authUserId: string,
+    submission: Omit<SubmitAssignmentDto, 'studentId'>,
+  ): Promise<SubmissionDocument> {
+    const student = await this.remote<StudentRemote>(
+      `${this.studentServiceUrl()}/by-auth-user`,
+      authUserId,
+      'Student profile for auth user',
+    );
+    return this.submit(assignmentId, { ...submission, studentId: student._id });
+  }
+
   async grade(submissionId: string, gradeSubmissionDto: GradeSubmissionDto): Promise<SubmissionDocument> {
     this.assertValidId(submissionId, 'Submission');
     const submission = await this.submissionModel.findByIdAndUpdate(

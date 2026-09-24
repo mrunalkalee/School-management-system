@@ -72,7 +72,7 @@ export class AssignmentsController {
     if (!currentUser.id) throw new UnauthorizedException('x-user-id is required when x-user-role is present');
 
     const { studentId: _bodyStudentId, ...submission } = submitAssignmentDto;
-    return this.assignmentsService.submit(id, { ...submission, studentId: currentUser.id });
+    return this.assignmentsService.submitForAuthUser(id, currentUser.id, submission);
   }
 }
 

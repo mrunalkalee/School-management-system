@@ -1,7 +1,9 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiHeader, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BooksService } from './books.service';
 import { CreateBookDto } from './dto/create-book.dto';
+import { Roles } from './roles.decorator';
+import { RolesGuard } from './roles.guard';
 
 @ApiTags('Library - Books')
 @Controller('library/books')
@@ -9,6 +11,10 @@ export class BooksController {
   constructor(private readonly booksService: BooksService) {}
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may add books.' })
   @ApiOperation({ summary: 'Add a book to the catalog' })
   @ApiResponse({ status: 201, description: 'Book created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid book payload' })

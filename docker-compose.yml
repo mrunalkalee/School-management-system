@@ -1,0 +1,283 @@
+services:
+  student-service:
+    build:
+      context: ./backend/services/student-service
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./backend/services/student-service/.env
+
+  teacher-service:
+    build:
+      context: ./backend/services/teacher-service
+    ports:
+      - "3002:3002"
+    env_file:
+      - ./backend/services/teacher-service/.env
+
+  class-subject-service:
+    build:
+      context: ./backend/services/class-subject-service
+    ports:
+      - "3003:3003"
+    env_file:
+      - ./backend/services/class-subject-service/.env
+    environment:
+      STUDENT_SERVICE_URL: http://student-service:3001/students
+      TEACHER_SERVICE_URL: http://teacher-service:3002/teachers
+    # depends_on starts containers, but does not wait for their applications to become ready.
+    depends_on:
+      - student-service
+      - teacher-service
+
+  timetable-service:
+    build:
+      context: ./backend/services/timetable-service
+    ports:
+      - "3004:3004"
+    env_file:
+      - ./backend/services/timetable-service/.env
+    environment:
+      CLASS_SERVICE_URL: http://class-subject-service:3003/classes
+      TEACHER_SERVICE_URL: http://teacher-service:3002/teachers
+    depends_on:
+      - class-subject-service
+      - teacher-service
+
+  attendance-service:
+    build:
+      context: ./backend/services/attendance-service
+    ports:
+      - "3005:3005"
+    env_file:
+      - ./backend/services/attendance-service/.env
+    environment:
+      STUDENT_SERVICE_URL: http://student-service:3001/students
+      CLASS_SERVICE_URL: http://class-subject-service:3003/classes
+    depends_on:
+      - student-service
+      - class-subject-service
+
+  examination-service:
+    build:
+      context: ./backend/services/examination-service
+    ports:
+      - "3006:3006"
+    env_file:
+      - ./backend/services/examination-service/.env
+    environment:
+      STUDENT_SERVICE_URL: http://student-service:3001/students
+      CLASS_SERVICE_URL: http://class-subject-service:3003/classes
+    depends_on:
+      - student-service
+      - class-subject-service
+
+  performance-service:
+    build:
+      context: ./backend/services/performance-service
+    ports:
+      - "3007:3007"
+    env_file:
+      - ./backend/services/performance-service/.env
+    environment:
+      ATTENDANCE_SERVICE_URL: http://attendance-service:3005/attendance
+      EXAMINATION_SERVICE_URL: http://examination-service:3006
+    depends_on:
+      - attendance-service
+      - examination-service
+
+  assignment-service:
+    build:
+      context: ./backend/services/assignment-service
+    ports:
+      - "3008:3008"
+    env_file:
+      - ./backend/services/assignment-service/.env
+    environment:
+      STUDENT_SERVICE_URL: http://student-service:3001/students
+      CLASS_SERVICE_URL: http://class-subject-service:3003/classes
+    depends_on:
+      - student-service
+      - class-subject-service
+
+  fee-service:
+    build:
+      context: ./backend/services/fee-service
+    ports:
+      - "3009:3009"
+    env_file:
+      - ./backend/services/fee-service/.env
+    environment:
+      STUDENT_SERVICE_URL: http://student-service:3001/students
+      CLASS_SERVICE_URL: http://class-subject-service:3003/classes
+    depends_on:
+      - student-service
+      - class-subject-service
+
+  leave-service:
+    build:
+      context: ./backend/services/leave-service
+    ports:
+      - "3010:3010"
+    env_file:
+      - ./backend/services/leave-service/.env
+    environment:
+      STUDENT_SERVICE_URL: http://student-service:3001/students
+      TEACHER_SERVICE_URL: http://teacher-service:3002/teachers
+    depends_on:
+      - student-service
+      - teacher-service
+
+  admission-service:
+    build:
+      context: ./backend/services/admission-service
+    ports:
+      - "3011:3011"
+    env_file:
+      - ./backend/services/admission-service/.env
+    environment:
+      CLASS_SERVICE_URL: http://class-subject-service:3003/classes
+    depends_on:
+      - class-subject-service
+
+  certificate-service:
+    build:
+      context: ./backend/services/certificate-service
+    ports:
+      - "3012:3012"
+    env_file:
+      - ./backend/services/certificate-service/.env
+    environment:
+      STUDENT_SERVICE_URL: http://student-service:3001/students
+    depends_on:
+      - student-service
+
+  notice-service:
+    build:
+      context: ./backend/services/notice-service
+    ports:
+      - "3013:3013"
+    env_file:
+      - ./backend/services/notice-service/.env
+    environment:
+      CLASS_SERVICE_URL: http://class-subject-service:3003/classes
+    depends_on:
+      - class-subject-service
+
+  library-service:
+    build:
+      context: ./backend/services/library-service
+    ports:
+      - "3014:3014"
+    env_file:
+      - ./backend/services/library-service/.env
+    environment:
+      STUDENT_SERVICE_URL: http://student-service:3001/students
+      TEACHER_SERVICE_URL: http://teacher-service:3002/teachers
+    depends_on:
+      - student-service
+      - teacher-service
+
+  transport-service:
+    build:
+      context: ./backend/services/transport-service
+    ports:
+      - "3015:3015"
+    env_file:
+      - ./backend/services/transport-service/.env
+    environment:
+      STUDENT_SERVICE_URL: http://student-service:3001/students
+    depends_on:
+      - student-service
+
+  dashboard-service:
+    build:
+      context: ./backend/services/dashboard-service
+    ports:
+      - "3016:3016"
+    env_file:
+      - ./backend/services/dashboard-service/.env
+    environment:
+      STUDENT_SERVICE_URL: http://student-service:3001/students
+      TEACHER_SERVICE_URL: http://teacher-service:3002/teachers
+      CLASS_SERVICE_URL: http://class-subject-service:3003/classes
+      TIMETABLE_SERVICE_URL: http://timetable-service:3004/timetables
+      ATTENDANCE_SERVICE_URL: http://attendance-service:3005/attendance
+      EXAMINATION_SERVICE_URL: http://examination-service:3006
+      PERFORMANCE_SERVICE_URL: http://performance-service:3007/performance
+      ASSIGNMENT_SERVICE_URL: http://assignment-service:3008/assignments
+      FEE_SERVICE_URL: http://fee-service:3009/fees
+      LEAVE_SERVICE_URL: http://leave-service:3010/leave-requests
+      ADMISSION_SERVICE_URL: http://admission-service:3011/admissions
+      NOTICE_SERVICE_URL: http://notice-service:3013/notices
+      CERTIFICATE_SERVICE_URL: http://certificate-service:3012/certificates
+      LIBRARY_SERVICE_URL: http://library-service:3014/library
+      TRANSPORT_SERVICE_URL: http://transport-service:3015/transport
+    depends_on:
+      - student-service
+      - teacher-service
+      - class-subject-service
+      - timetable-service
+      - attendance-service
+      - examination-service
+      - performance-service
+      - assignment-service
+      - fee-service
+      - leave-service
+      - admission-service
+      - certificate-service
+      - notice-service
+      - library-service
+      - transport-service
+
+  auth-service:
+    build:
+      context: ./backend/services/auth-service
+    ports:
+      - "3017:3017"
+    env_file:
+      - ./backend/services/auth-service/.env
+
+  api-gateway:
+    build:
+      context: ./backend/api-gateway
+    ports:
+      - "3100:3100"
+    env_file:
+      - ./backend/api-gateway/.env
+    environment:
+      STUDENT_SERVICE_URL: http://student-service:3001
+      TEACHER_SERVICE_URL: http://teacher-service:3002
+      CLASS_SERVICE_URL: http://class-subject-service:3003
+      TIMETABLE_SERVICE_URL: http://timetable-service:3004
+      ATTENDANCE_SERVICE_URL: http://attendance-service:3005
+      EXAMINATION_SERVICE_URL: http://examination-service:3006
+      PERFORMANCE_SERVICE_URL: http://performance-service:3007
+      ASSIGNMENT_SERVICE_URL: http://assignment-service:3008
+      FEE_SERVICE_URL: http://fee-service:3009
+      LEAVE_SERVICE_URL: http://leave-service:3010
+      ADMISSION_SERVICE_URL: http://admission-service:3011
+      CERTIFICATE_SERVICE_URL: http://certificate-service:3012
+      NOTICE_SERVICE_URL: http://notice-service:3013
+      LIBRARY_SERVICE_URL: http://library-service:3014
+      TRANSPORT_SERVICE_URL: http://transport-service:3015
+      DASHBOARD_SERVICE_URL: http://dashboard-service:3016
+      AUTH_SERVICE_URL: http://auth-service:3017
+    depends_on:
+      - student-service
+      - teacher-service
+      - class-subject-service
+      - timetable-service
+      - attendance-service
+      - examination-service
+      - performance-service
+      - assignment-service
+      - fee-service
+      - leave-service
+      - admission-service
+      - certificate-service
+      - notice-service
+      - library-service
+      - transport-service
+      - dashboard-service
+      - auth-service

@@ -94,7 +94,12 @@ export class CreateStudentDto {
   @IsBoolean()
   isActive?: boolean;
 
-  @ApiProperty({ example: '66b5d38acd65f26429ab4cff', nullable: true, required: false })
+  @ApiProperty({ example: '66b5d38acd65f26429ab4cff', required: false, description: 'Auth-service user ID linked to this student profile.' })
+  @IsOptional()
+  @IsString()
+  authUserId?: string;
+
+  @ApiProperty({ example: '66b5d38acd65f26429ab4cff', nullable: true, required: false, deprecated: true, description: 'Legacy alias. Use authUserId for new profile links.' })
   @IsOptional()
   @IsString()
   userId?: string | null;
