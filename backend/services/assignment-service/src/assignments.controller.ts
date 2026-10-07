@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AssignmentsService } from './assignments.service';
 import { CurrentUser, GatewayUser } from './current-user.decorator';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
 import { GradeSubmissionDto } from './dto/grade-submission.dto';
 import { SubmitAssignmentDto } from './dto/submit-assignment.dto';
+import { UpdateAssignmentDto } from './dto/update-assignment.dto';
 import { Roles } from './roles.decorator';
 import { RolesGuard } from './roles.guard';
 
@@ -51,6 +52,32 @@ export class AssignmentsController {
   @ApiResponse({ status: 200, description: 'Assignment returned successfully' })
   @ApiResponse({ status: 404, description: 'Assignment not found' })
   findOne(@Param('id') id: string) { return this.assignmentsService.findOne(id); }
+
+  @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may update assignments.' })
+  @ApiOperation({ summary: 'Update an assignment' })
+  @ApiParam({ name: 'id', description: 'Assignment ID', example: '66b5d38acd65f26429ab4ce5' })
+  @ApiResponse({ status: 200, description: 'Assignment updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid assignment payload' })
+  @ApiResponse({ status: 404, description: 'Assignment or referenced class not found' })
+  @ApiResponse({ status: 503, description: 'Class service unavailable' })
+  update(@Param('id') id: string, @Body() updateAssignmentDto: UpdateAssignmentDto) {
+    return this.assignmentsService.update(id, updateAssignmentDto);
+  }
+
+  @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may delete assignments.' })
+  @ApiOperation({ summary: 'Permanently delete an assignment and its submissions' })
+  @ApiParam({ name: 'id', description: 'Assignment ID', example: '66b5d38acd65f26429ab4ce5' })
+  @ApiResponse({ status: 200, description: 'Assignment deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Assignment not found' })
+  remove(@Param('id') id: string) { return this.assignmentsService.remove(id); }
 
   @Post(':id/submit')
   @UseGuards(RolesGuard)

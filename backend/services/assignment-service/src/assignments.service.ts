@@ -9,6 +9,7 @@ import { Assignment, AssignmentDocument } from './assignment.schema';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
 import { GradeSubmissionDto } from './dto/grade-submission.dto';
 import { SubmitAssignmentDto } from './dto/submit-assignment.dto';
+import { UpdateAssignmentDto } from './dto/update-assignment.dto';
 import { Submission, SubmissionDocument, SubmissionStatus } from './submission.schema';
 
 interface StudentRemote {
@@ -54,6 +55,23 @@ export class AssignmentsService {
     const assignment = await this.assignmentModel.findById(id).exec();
     if (!assignment) throw new NotFoundException(`Assignment ${id} was not found`);
     return assignment;
+  }
+
+  async update(id: string, updateAssignmentDto: UpdateAssignmentDto): Promise<AssignmentDocument> {
+    await this.findOne(id);
+    if (updateAssignmentDto.classId) await this.remote(this.classServiceUrl(), updateAssignmentDto.classId, 'Class');
+    const assignment = await this.assignmentModel
+      .findByIdAndUpdate(id, { $set: updateAssignmentDto }, { new: true, runValidators: true })
+      .exec();
+    if (!assignment) throw new NotFoundException(`Assignment ${id} was not found`);
+    return assignment;
+  }
+
+  async remove(id: string): Promise<{ message: string }> {
+    await this.findOne(id);
+    await this.assignmentModel.findByIdAndDelete(id).exec();
+    await this.submissionModel.deleteMany({ assignmentId: id }).exec();
+    return { message: 'Assignment deleted successfully' };
   }
 
   async submit(assignmentId: string, submitAssignmentDto: SubmitAssignmentDto): Promise<SubmissionDocument> {

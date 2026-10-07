@@ -8,7 +8,8 @@
     "backend/services/*"
   ],
   "scripts": {
-    "dev:all": "concurrently --kill-others-on-fail --names api-gateway \"npm run start:dev --workspace=backend/api-gateway\""
+    "dev:all": "concurrently --kill-others-on-fail --names api-gateway,frontend \"npm run start:dev --workspace=backend/api-gateway\" \"npm run dev --workspace=frontend\"",
+    "env:reference": "node scripts/generate-root-env.cjs"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

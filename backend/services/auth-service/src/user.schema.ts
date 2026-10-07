@@ -22,6 +22,9 @@ export class User {
   @Prop({ trim: true, maxlength: 100, index: true })
   linkedProfileId?: string;
 
+  @Prop({ type: [String], default: [], trim: true })
+  linkedStudentIds: string[];
+
   @Prop({ required: true, default: true, index: true })
   isActive: boolean;
 }

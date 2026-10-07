@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CertificatesService } from './certificates.service';
 import { CreateCertificateDto } from './dto/create-certificate.dto';
+import { UpdateCertificateDto } from './dto/update-certificate.dto';
 import { Roles } from './roles.decorator';
 import { RolesGuard } from './roles.guard';
 
@@ -24,6 +25,14 @@ export class CertificatesController {
   @ApiResponse({ status: 503, description: 'Student service unavailable' })
   create(@Body() createCertificateDto: CreateCertificateDto) { return this.certificatesService.create(createCertificateDto); }
 
+  @Get()
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may list all certificates.' })
+  @ApiOperation({ summary: 'List all certificates' })
+  @ApiResponse({ status: 200, description: 'Certificates returned successfully' })
+  findAll() { return this.certificatesService.findAll(); }
+
   @Get('student/:studentId')
   @ApiOperation({ summary: 'List all certificates issued to a student' })
   @ApiParam({ name: 'studentId', example: '66b5d38acd65f26429ab4ce1' })
@@ -38,6 +47,28 @@ export class CertificatesController {
   @ApiResponse({ status: 200, description: 'Certificate returned successfully' })
   @ApiResponse({ status: 404, description: 'Certificate not found' })
   findOne(@Param('id') id: string) { return this.certificatesService.findOne(id); }
+
+  @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may update certificates.' })
+  @ApiOperation({ summary: 'Update a certificate' })
+  @ApiParam({ name: 'id', example: '66b5d38acd65f26429ab4ce5' })
+  @ApiResponse({ status: 200, description: 'Certificate updated successfully' })
+  @ApiResponse({ status: 404, description: 'Certificate or student not found' })
+  update(@Param('id') id: string, @Body() dto: UpdateCertificateDto) { return this.certificatesService.update(id, dto); }
+
+  @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may delete certificates.' })
+  @ApiOperation({ summary: 'Permanently delete a certificate' })
+  @ApiParam({ name: 'id', example: '66b5d38acd65f26429ab4ce5' })
+  @ApiResponse({ status: 200, description: 'Certificate deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Certificate not found' })
+  remove(@Param('id') id: string) { return this.certificatesService.remove(id); }
 }
 
 @ApiTags('Health')

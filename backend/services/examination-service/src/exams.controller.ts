@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateExamDto, UpdateExamDto } from './dto/create-exam.dto';
 import { EnterMarksDto } from './dto/enter-marks.dto';
@@ -41,6 +41,10 @@ export class ExamsController {
   findOne(@Param('id') id: string) { return this.examsService.findOne(id); }
 
   @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may update exams.' })
   @ApiOperation({ summary: 'Update an exam' })
   @ApiParam({ name: 'id', example: '66b5d38acd65f26429ab4ce4' })
   @ApiResponse({ status: 200, description: 'Exam updated successfully' })
@@ -50,6 +54,17 @@ export class ExamsController {
   update(@Param('id') id: string, @Body() updateExamDto: UpdateExamDto) {
     return this.examsService.update(id, updateExamDto);
   }
+
+  @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may delete exams.' })
+  @ApiOperation({ summary: 'Permanently delete an exam and its marks' })
+  @ApiParam({ name: 'id', description: 'Exam ID', example: '66b5d38acd65f26429ab4ce4' })
+  @ApiResponse({ status: 200, description: 'Exam deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Exam not found' })
+  remove(@Param('id') id: string) { return this.examsService.remove(id); }
 
   @Post(':id/marks')
   @UseGuards(RolesGuard)
@@ -66,6 +81,16 @@ export class ExamsController {
   enterMarks(@Param('id') id: string, @Body() enterMarksDto: EnterMarksDto) {
     return this.examsService.enterMarks(id, enterMarksDto);
   }
+
+  @Delete(':id/marks/:markId')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may delete marks.' })
+  @ApiOperation({ summary: 'Permanently delete one mark entry belonging to an exam' })
+  @ApiResponse({ status: 200, description: 'Mark deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Exam or mark not found' })
+  removeMark(@Param('id') id: string, @Param('markId') markId: string) { return this.examsService.removeMark(id, markId); }
 
   @Get('/results/student/:studentId')
   @ApiOperation({ summary: 'Get a stable exam-results summary for a student' })

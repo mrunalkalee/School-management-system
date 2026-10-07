@@ -6,6 +6,7 @@ import axios from 'axios';
 import { FilterQuery, Model } from 'mongoose';
 import { firstValueFrom } from 'rxjs';
 import { CreateNoticeDto } from './dto/create-notice.dto';
+import { UpdateNoticeDto } from './dto/update-notice.dto';
 import { Notice, NoticeDocument, TargetRole } from './notice.schema';
 
 @Injectable()
@@ -30,6 +31,8 @@ export class NoticesService {
     else filters.push({ $or: [{ targetClassId: { $exists: false } }, { targetClassId: null }] });
     return this.noticeModel.find({ $and: filters }).sort({ postedAt: -1 }).exec();
   }
+  async update(id: string, dto: UpdateNoticeDto): Promise<NoticeDocument> { const notice = await this.noticeModel.findById(id).exec(); if (!notice) throw new NotFoundException(`Notice ${id} was not found`); if (dto.targetClassId) await this.remote(this.classServiceUrl(), dto.targetClassId, 'Class'); return (await this.noticeModel.findByIdAndUpdate(id, { $set: dto }, { new: true, runValidators: true }).exec())!; }
+  async remove(id: string): Promise<{ message: string }> { const notice = await this.noticeModel.findByIdAndDelete(id).exec(); if (!notice) throw new NotFoundException(`Notice ${id} was not found`); return { message: 'Notice deleted successfully' }; }
 
   private async remote<T>(baseUrl: string, id: string, name: string): Promise<T> {
     try {

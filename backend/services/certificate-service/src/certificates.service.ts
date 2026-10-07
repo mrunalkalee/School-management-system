@@ -7,6 +7,7 @@ import { isValidObjectId, Model } from 'mongoose';
 import { firstValueFrom } from 'rxjs';
 import { Certificate, CertificateDocument } from './certificate.schema';
 import { CreateCertificateDto } from './dto/create-certificate.dto';
+import { UpdateCertificateDto } from './dto/update-certificate.dto';
 
 @Injectable()
 export class CertificatesService {
@@ -27,11 +28,29 @@ export class CertificatesService {
     return this.certificateModel.find({ studentId }).sort({ issuedDate: -1 }).exec();
   }
 
+  async findAll(): Promise<CertificateDocument[]> {
+    return this.certificateModel.find().sort({ issuedDate: -1 }).exec();
+  }
+
   async findOne(id: string): Promise<CertificateDocument> {
     if (!isValidObjectId(id)) throw new NotFoundException(`Certificate ${id} was not found`);
     const certificate = await this.certificateModel.findById(id).exec();
     if (!certificate) throw new NotFoundException(`Certificate ${id} was not found`);
     return certificate;
+  }
+
+  async update(id: string, dto: UpdateCertificateDto): Promise<CertificateDocument> {
+    await this.findOne(id);
+    if (dto.studentId) await this.remote(this.studentServiceUrl(), dto.studentId, 'Student');
+    const certificate = await this.certificateModel.findByIdAndUpdate(id, { $set: dto }, { new: true, runValidators: true }).exec();
+    if (!certificate) throw new NotFoundException(`Certificate ${id} was not found`);
+    return certificate;
+  }
+
+  async remove(id: string): Promise<{ message: string }> {
+    await this.findOne(id);
+    await this.certificateModel.findByIdAndDelete(id).exec();
+    return { message: 'Certificate deleted successfully' };
   }
 
   private async remote<T>(baseUrl: string, id: string, name: string): Promise<T> {

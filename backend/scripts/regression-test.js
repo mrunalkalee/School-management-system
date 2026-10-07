@@ -9,6 +9,10 @@
  * appending another plain object to `tests` (or use the small role helpers).
  */
 const axios = require('axios');
+const { spawnSync } = require('node:child_process');
+const { readFileSync } = require('node:fs');
+const { join } = require('node:path');
+const mongoose = require('mongoose');
 
 const BASE_URL = process.env.BRIGHTBOARD_GATEWAY_URL || 'http://localhost:3100';
 const PASSWORD = 'TestPass123';
@@ -20,6 +24,7 @@ const client = axios.create({ baseURL: BASE_URL, timeout: 15_000, validateStatus
 const tokens = {};
 const authUserIds = {};
 const ids = {};
+const createdRecords = [];
 
 function auth(role) {
   return role ? { Authorization: `Bearer ${tokens[role]}` } : {};
@@ -29,6 +34,61 @@ function idOf(data, label) {
   const id = data && (data._id || data.id);
   if (!id) throw new Error(`${label} did not return an id`);
   return id;
+}
+
+const cleanupTargets = [
+  { prefix: '/students', env: 'backend/services/student-service/.env', collection: 'students' },
+  { prefix: '/teachers', env: 'backend/services/teacher-service/.env', collection: 'teachers' },
+  { prefix: '/classes', env: 'backend/services/class-subject-service/.env', collection: 'classes' },
+  { prefix: '/subjects', env: 'backend/services/class-subject-service/.env', collection: 'subjects' },
+  { prefix: '/timetables', env: 'backend/services/timetable-service/.env', collection: 'timetables' },
+  { prefix: '/fees/structures', env: 'backend/services/fee-service/.env', collection: 'feestructures' },
+  { prefix: '/fees/payments', env: 'backend/services/fee-service/.env', collection: 'payments' },
+  { prefix: '/certificates', env: 'backend/services/certificate-service/.env', collection: 'certificates' },
+  { prefix: '/notices', env: 'backend/services/notice-service/.env', collection: 'notices' },
+  { prefix: '/library/books', env: 'backend/services/library-service/.env', collection: 'books' },
+  { prefix: '/library/issue', env: 'backend/services/library-service/.env', collection: 'issuerecords' },
+  { prefix: '/transport/routes', env: 'backend/services/transport-service/.env', collection: 'routes' },
+  { prefix: '/transport/allocate', env: 'backend/services/transport-service/.env', collection: 'busallocations' },
+  { prefix: '/attendance', env: 'backend/services/attendance-service/.env', collection: 'attendances' },
+  { prefix: '/exams', env: 'backend/services/examination-service/.env', collection: 'exams' },
+  { prefix: '/assignments', env: 'backend/services/assignment-service/.env', collection: 'assignments' },
+  { prefix: '/leave-requests', env: 'backend/services/leave-service/.env', collection: 'leaverequests' },
+  { prefix: '/admissions', env: 'backend/services/admission-service/.env', collection: 'admissions' },
+];
+
+function trackCreatedRecord(url, data, label) {
+  let target = cleanupTargets.find((item) => url === item.prefix);
+  if (!target && url.startsWith('/assignments/') && url.endsWith('/submit')) {
+    target = { env: 'backend/services/assignment-service/.env', collection: 'submissions' };
+  }
+  if (!target && url.startsWith('/exams/') && url.endsWith('/marks')) {
+    target = { env: 'backend/services/examination-service/.env', collection: 'marks' };
+  }
+  if (!target) return;
+  const id = data && (data._id || data.id);
+  if (id) createdRecords.push({ ...target, id, label });
+}
+
+function envValue(file, key) {
+  const prefix = key + '=';
+  const line = readFileSync(join(__dirname, '..', '..', file), 'utf8').split(/\r?\n/).find((value) => value.startsWith(prefix));
+  if (!line) throw new Error(key + ' is missing from ' + file);
+  return line.slice(prefix.length).trim();
+}
+
+async function hardDeleteTrackedRecords() {
+  const groups = Map.groupBy(createdRecords, (record) => record.env + '|' + record.collection);
+  for (const [key, records] of groups) {
+    const [env, collection] = key.split('|');
+    const connection = await mongoose.createConnection(envValue(env, 'MONGODB_URI')).asPromise();
+    try {
+      const result = await connection.collection(collection).deleteMany({ _id: { $in: records.map((record) => new mongoose.Types.ObjectId(record.id)) } });
+      console.log('Cleanup: hard-deleted ' + result.deletedCount + ' tracked record(s) from ' + collection + '.');
+    } finally {
+      await connection.close();
+    }
+  }
 }
 
 function success(status) {
@@ -44,9 +104,9 @@ async function request(test) {
 
 async function loginUsers() {
   const users = [
-    { role: 'admin', name: 'BrightBoard Test Admin', email: 'admin-test@brightboard.com' },
-    { role: 'teacher', name: 'BrightBoard Test Teacher', email: 'teacher-test@brightboard.com' },
-    { role: 'student', name: 'BrightBoard Test Student', email: 'student-test@brightboard.com' },
+    { role: 'admin', name: 'BrightBoard Test Admin', email: 'role-admin-' + stamp + '@brightboard.test' },
+    { role: 'teacher', name: 'BrightBoard Test Teacher', email: 'role-teacher-' + stamp + '@brightboard.test' },
+    { role: 'student', name: 'BrightBoard Test Student', email: 'role-student-auth-' + stamp + '@brightboard.test' },
   ];
 
   for (const user of users) {
@@ -64,7 +124,9 @@ async function loginUsers() {
 async function createFixture(method, url, data, label) {
   const response = await client.request({ method, url, data, headers: auth('admin') });
   if (!success(response.status)) throw new Error(`Fixture ${label} failed: HTTP ${response.status}`);
-  return idOf(response.data, label);
+  const id = idOf(response.data, label);
+  trackCreatedRecord(url, response.data, label);
+  return id;
 }
 
 async function findOrCreateProfile(url, authUserId, data, label) {
@@ -184,9 +246,10 @@ async function run() {
 
   for (const test of tests) {
     try {
-      const { response } = await request(test);
+        const { response, url } = await request(test);
       const passed = Array.isArray(test.expected) ? test.expected.includes(response.status) : response.status === test.expected;
       if (passed && test.after) test.after(response.data);
+        if (passed && test.method === 'POST') trackCreatedRecord(url, response.data, test.service);
       results.push({ service: test.service, method: test.method, expected: expectedLabel(test.expected), actual: response.status, passed });
     } catch (error) {
       results.push({ service: test.service, method: test.method, expected: expectedLabel(test.expected), actual: error.code || 'ERROR', passed: false });
@@ -209,4 +272,17 @@ async function run() {
 run().catch((error) => {
   console.error(`${ansi.red}Test setup failed: ${error.message}${ansi.reset}`);
   process.exitCode = 1;
+}).finally(async () => {
+  try {
+    await hardDeleteTrackedRecords();
+  } catch (error) {
+    console.error(`${ansi.red}Tracked-record cleanup failed: ${error.message}${ansi.reset}`);
+    process.exitCode = 1;
+  }
+  // Also removes dependent records (attendance, marks, submissions, allocations, and issues).
+  const cleanup = spawnSync(process.execPath, [__dirname + '/cleanup-test-data.js', '--confirm'], { stdio: 'inherit' });
+  if (cleanup.error || cleanup.status !== 0) {
+    console.error(`${ansi.red}Test-data cleanup failed.${ansi.reset}`);
+    process.exitCode = 1;
+  }
 });

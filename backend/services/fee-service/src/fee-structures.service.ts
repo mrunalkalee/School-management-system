@@ -6,6 +6,7 @@ import axios from 'axios';
 import { FilterQuery, Model } from 'mongoose';
 import { firstValueFrom } from 'rxjs';
 import { CreateFeeStructureDto } from './dto/create-fee-structure.dto';
+import { UpdateFeeStructureDto } from './dto/update-fee-structure.dto';
 import { FeeStructure, FeeStructureDocument } from './fee-structure.schema';
 
 @Injectable()
@@ -35,6 +36,25 @@ export class FeeStructuresService {
     const feeStructure = await this.feeStructureModel.findById(id).exec();
     if (!feeStructure) throw new NotFoundException(`Fee structure ${id} was not found`);
     return feeStructure;
+  }
+
+  async update(id: string, dto: UpdateFeeStructureDto): Promise<FeeStructureDocument> {
+    await this.findOne(id);
+    if (dto.classId) await this.remote(this.classServiceUrl(), dto.classId, 'Class');
+    try {
+      const feeStructure = await this.feeStructureModel.findByIdAndUpdate(id, { $set: dto }, { new: true, runValidators: true }).exec();
+      if (!feeStructure) throw new NotFoundException(`Fee structure ${id} was not found`);
+      return feeStructure;
+    } catch (error: unknown) {
+      if (this.isDuplicateKey(error)) throw new ConflictException('A fee structure already exists for this class, academic year, and fee type');
+      throw error;
+    }
+  }
+
+  async remove(id: string): Promise<{ message: string }> {
+    await this.findOne(id);
+    await this.feeStructureModel.findByIdAndDelete(id).exec();
+    return { message: 'Fee structure deleted successfully' };
   }
 
   private async remote<T>(baseUrl: string, id: string, name: string): Promise<T> {

@@ -1,0 +1,10 @@
+# Dependencies and build outputs
+**/node_modules
+**/dist
+
+# Environment files and source-control metadata
+.env
+.env.*
+**/.env
+**/.env.*
+.git

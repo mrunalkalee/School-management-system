@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
-import { ApiHeader, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateNoticeDto } from './dto/create-notice.dto';
+import { UpdateNoticeDto } from './dto/update-notice.dto';
 import { NoticesService } from './notices.service';
 import { TargetRole } from './notice.schema';
 import { Roles } from './roles.decorator';
@@ -29,6 +30,16 @@ export class NoticesController {
   @ApiQuery({ name: 'classId', required: false, example: '66b5d38acd65f26429ab4ce2' })
   @ApiResponse({ status: 200, description: 'Matching non-expired notices returned successfully' })
   findAll(@Query('targetRole') targetRole?: TargetRole, @Query('classId') classId?: string) { return this.noticesService.findAll(targetRole, classId); }
+
+  @Patch(':id') @UseGuards(RolesGuard) @Roles('admin')
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'] })
+  @ApiOperation({ summary: 'Update a notice' }) @ApiParam({ name: 'id' }) @ApiResponse({ status: 200, description: 'Notice updated successfully' }) @ApiResponse({ status: 404, description: 'Notice or target class not found' })
+  update(@Param('id') id: string, @Body() dto: UpdateNoticeDto) { return this.noticesService.update(id, dto); }
+
+  @Delete(':id') @UseGuards(RolesGuard) @Roles('admin')
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'] })
+  @ApiOperation({ summary: 'Permanently delete a notice' }) @ApiParam({ name: 'id' }) @ApiResponse({ status: 200, description: 'Notice deleted successfully' }) @ApiResponse({ status: 404, description: 'Notice not found' })
+  remove(@Param('id') id: string) { return this.noticesService.remove(id); }
 }
 
 @ApiTags('Health')

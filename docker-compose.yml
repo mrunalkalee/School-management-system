@@ -1,7 +1,11 @@
 services:
   student-service:
     build:
-      context: ./backend/services/student-service
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        SERVICE_PATH: services/student-service
+        SERVICE_PORT: 3001
     ports:
       - "3001:3001"
     env_file:
@@ -9,7 +13,11 @@ services:
 
   teacher-service:
     build:
-      context: ./backend/services/teacher-service
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        SERVICE_PATH: services/teacher-service
+        SERVICE_PORT: 3002
     ports:
       - "3002:3002"
     env_file:
@@ -17,7 +25,11 @@ services:
 
   class-subject-service:
     build:
-      context: ./backend/services/class-subject-service
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        SERVICE_PATH: services/class-subject-service
+        SERVICE_PORT: 3003
     ports:
       - "3003:3003"
     env_file:
@@ -32,7 +44,11 @@ services:
 
   timetable-service:
     build:
-      context: ./backend/services/timetable-service
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        SERVICE_PATH: services/timetable-service
+        SERVICE_PORT: 3004
     ports:
       - "3004:3004"
     env_file:
@@ -46,7 +62,11 @@ services:
 
   attendance-service:
     build:
-      context: ./backend/services/attendance-service
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        SERVICE_PATH: services/attendance-service
+        SERVICE_PORT: 3005
     ports:
       - "3005:3005"
     env_file:
@@ -60,7 +80,11 @@ services:
 
   examination-service:
     build:
-      context: ./backend/services/examination-service
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        SERVICE_PATH: services/examination-service
+        SERVICE_PORT: 3006
     ports:
       - "3006:3006"
     env_file:
@@ -74,21 +98,29 @@ services:
 
   performance-service:
     build:
-      context: ./backend/services/performance-service
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        SERVICE_PATH: services/performance-service
+        SERVICE_PORT: 3007
     ports:
       - "3007:3007"
     env_file:
       - ./backend/services/performance-service/.env
     environment:
       ATTENDANCE_SERVICE_URL: http://attendance-service:3005/attendance
-      EXAMINATION_SERVICE_URL: http://examination-service:3006
+      EXAMINATION_SERVICE_URL: http://examination-service:3006/exams
     depends_on:
       - attendance-service
       - examination-service
 
   assignment-service:
     build:
-      context: ./backend/services/assignment-service
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        SERVICE_PATH: services/assignment-service
+        SERVICE_PORT: 3008
     ports:
       - "3008:3008"
     env_file:
@@ -102,7 +134,11 @@ services:
 
   fee-service:
     build:
-      context: ./backend/services/fee-service
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        SERVICE_PATH: services/fee-service
+        SERVICE_PORT: 3009
     ports:
       - "3009:3009"
     env_file:
@@ -116,7 +152,11 @@ services:
 
   leave-service:
     build:
-      context: ./backend/services/leave-service
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        SERVICE_PATH: services/leave-service
+        SERVICE_PORT: 3010
     ports:
       - "3010:3010"
     env_file:
@@ -130,7 +170,11 @@ services:
 
   admission-service:
     build:
-      context: ./backend/services/admission-service
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        SERVICE_PATH: services/admission-service
+        SERVICE_PORT: 3011
     ports:
       - "3011:3011"
     env_file:
@@ -142,7 +186,11 @@ services:
 
   certificate-service:
     build:
-      context: ./backend/services/certificate-service
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        SERVICE_PATH: services/certificate-service
+        SERVICE_PORT: 3012
     ports:
       - "3012:3012"
     env_file:
@@ -154,7 +202,11 @@ services:
 
   notice-service:
     build:
-      context: ./backend/services/notice-service
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        SERVICE_PATH: services/notice-service
+        SERVICE_PORT: 3013
     ports:
       - "3013:3013"
     env_file:
@@ -166,7 +218,11 @@ services:
 
   library-service:
     build:
-      context: ./backend/services/library-service
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        SERVICE_PATH: services/library-service
+        SERVICE_PORT: 3014
     ports:
       - "3014:3014"
     env_file:
@@ -180,7 +236,11 @@ services:
 
   transport-service:
     build:
-      context: ./backend/services/transport-service
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        SERVICE_PATH: services/transport-service
+        SERVICE_PORT: 3015
     ports:
       - "3015:3015"
     env_file:
@@ -192,7 +252,11 @@ services:
 
   dashboard-service:
     build:
-      context: ./backend/services/dashboard-service
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        SERVICE_PATH: services/dashboard-service
+        SERVICE_PORT: 3016
     ports:
       - "3016:3016"
     env_file:
@@ -232,7 +296,11 @@ services:
 
   auth-service:
     build:
-      context: ./backend/services/auth-service
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        SERVICE_PATH: services/auth-service
+        SERVICE_PORT: 3017
     ports:
       - "3017:3017"
     env_file:
@@ -240,7 +308,11 @@ services:
 
   api-gateway:
     build:
-      context: ./backend/api-gateway
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        SERVICE_PATH: api-gateway
+        SERVICE_PORT: 3100
     ports:
       - "3100:3100"
     env_file:

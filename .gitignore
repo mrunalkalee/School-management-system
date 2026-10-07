@@ -10,6 +10,9 @@ coverage/
 .env.*
 !.env.example
 
+# Consolidated reference file at the repository root
+/.env
+
 # Logs
 *.log
 npm-debug.log*

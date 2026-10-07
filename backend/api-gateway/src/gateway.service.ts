@@ -28,6 +28,12 @@ export class GatewayService {
     const headers = { ...request.headers } as Record<string, string | string[] | undefined>;
     delete headers.host;
     delete headers['content-length'];
+    // Only GatewayAuthGuard may provide identity headers to downstream services.
+    if (!request.headers.authorization) {
+      delete headers['x-user-id'];
+      delete headers['x-user-role'];
+      delete headers['x-linked-student-ids'];
+    }
     const upstreamRequest: AxiosRequestConfig = { method: request.method, url: upstreamUrl, data: request.body, headers, validateStatus: () => true, responseType: 'arraybuffer' };
     let upstreamResponse: AxiosResponse<ArrayBuffer>;
     try {

@@ -1,16 +1,16 @@
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { isValidObjectId, Model } from 'mongoose';
 import { LoginUserDto } from './dto/login-user.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { JwtPayload } from './jwt.strategy';
 import { RefreshToken } from './refresh-token.schema';
-import { User, UserDocument } from './user.schema';
+import { User, UserDocument, UserRole } from './user.schema';
 
 export interface AuthResponse { user: Record<string, unknown>; access_token: string; refresh_token: string; }
 
@@ -23,12 +23,45 @@ export class AuthService {
     private readonly config: ConfigService,
   ) {}
 
-  async register(dto: RegisterUserDto): Promise<AuthResponse> {
+  async register(dto: RegisterUserDto, requesterRole?: string, authorization?: string): Promise<AuthResponse> {
+    const userCount = await this.userModel.countDocuments();
+    if (userCount > 0) {
+      await this.assertAdminAccess(requesterRole, authorization);
+    }
+
     const email = dto.email.trim().toLowerCase();
     const exists = await this.userModel.exists({ email });
     if (exists) throw new ConflictException('A user with this email already exists');
-    const user = await new this.userModel({ ...dto, email, password: await bcrypt.hash(dto.password, 12) }).save();
+    const user = await new this.userModel({
+      ...dto,
+      email,
+      linkedStudentIds: dto.linkedStudentIds ?? [],
+      password: await bcrypt.hash(dto.password, 12),
+    }).save();
     return this.createSession(user);
+  }
+
+  async listUsers(requesterRole?: string, authorization?: string): Promise<Array<Record<string, unknown>>> {
+    await this.assertAdminAccess(requesterRole, authorization);
+    return this.userModel
+      .find({}, { name: 1, email: 1, role: 1, linkedProfileId: 1, linkedStudentIds: 1, isActive: 1, createdAt: 1 })
+      .sort({ createdAt: -1 })
+      .lean()
+      .exec() as Promise<Array<Record<string, unknown>>>;
+  }
+
+  async deleteUser(userId: string, requesterRole?: string, authorization?: string): Promise<{ message: string }> {
+    const requester = await this.assertDeleteAccess(requesterRole, authorization);
+    if (requester?.sub === userId) throw new BadRequestException('Cannot delete your own account');
+
+    if (!isValidObjectId(userId)) throw new NotFoundException('User not found');
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) throw new NotFoundException('User not found');
+
+    await this.refreshTokenModel.deleteMany({ userId: user.id }).exec();
+    // Deliberately retain linked student/teacher profiles: they may be referenced by historical academic records.
+    await user.deleteOne();
+    return { message: 'User account deleted successfully' };
   }
 
   async login(dto: LoginUserDto): Promise<AuthResponse> {
@@ -57,6 +90,12 @@ export class AuthService {
     return { message: 'Logged out successfully' };
   }
 
+  /** Used by token verification so parent-child links take effect immediately. */
+  async findVerifiedUser(userId: string): Promise<{ linkedStudentIds: string[] } | null> {
+    return this.userModel.findById(userId, { linkedStudentIds: 1, isActive: 1 }).lean().exec()
+      .then((user) => user?.isActive ? { linkedStudentIds: user.linkedStudentIds ?? [] } : null);
+  }
+
   private async createSession(user: UserDocument): Promise<AuthResponse> {
     const payload: JwtPayload = { sub: user.id, email: user.email, role: user.role, type: 'access' };
     const access_token = await this.jwtService.signAsync(payload, { expiresIn: this.config.getOrThrow<string>('JWT_EXPIRES_IN') as never });
@@ -73,6 +112,41 @@ export class AuthService {
       return payload;
     } catch {
       throw new UnauthorizedException('Refresh token is invalid');
+    }
+  }
+
+  private async assertAdminAccess(requesterRole?: string, authorization?: string): Promise<void> {
+    if (requesterRole !== UserRole.Admin || !authorization?.startsWith('Bearer ')) {
+      throw new ForbiddenException('Administrator access is required');
+    }
+    try {
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(authorization.slice('Bearer '.length));
+      if (payload.type !== 'access' || payload.role !== UserRole.Admin) throw new Error('Not an admin access token');
+    } catch {
+      throw new ForbiddenException('Administrator access is required');
+    }
+  }
+
+  private async assertDeleteAccess(requesterRole?: string, authorization?: string): Promise<JwtPayload | undefined> {
+    // Direct local requests without gateway identity headers remain intentionally unguarded for development.
+    if (requesterRole === undefined) {
+      if (!authorization?.startsWith('Bearer ')) return undefined;
+      try {
+        const payload = await this.jwtService.verifyAsync<JwtPayload>(authorization.slice('Bearer '.length));
+        return payload.type === 'access' ? payload : undefined;
+      } catch {
+        return undefined;
+      }
+    }
+    if (requesterRole !== UserRole.Admin || !authorization?.startsWith('Bearer ')) {
+      throw new ForbiddenException('Administrator access is required');
+    }
+    try {
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(authorization.slice('Bearer '.length));
+      if (payload.type !== 'access' || payload.role !== UserRole.Admin) throw new Error('Not an admin access token');
+      return payload;
+    } catch {
+      throw new ForbiddenException('Administrator access is required');
     }
   }
 }
