@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, NotFoundException, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
@@ -14,7 +14,7 @@ const sessionSchema = {
   type: 'object',
   required: ['user', 'access_token', 'refresh_token'],
   properties: {
-    user: { type: 'object', description: 'Public user document; password is never returned.', properties: { _id: { type: 'string' }, name: { type: 'string' }, email: { type: 'string', format: 'email' }, role: { type: 'string', enum: ['admin', 'teacher', 'student', 'parent'] }, linkedProfileId: { type: 'string', nullable: true }, isActive: { type: 'boolean' } } },
+    user: { type: 'object', description: 'Public user document; password is never returned.', properties: { _id: { type: 'string' }, name: { type: 'string' }, email: { type: 'string', format: 'email' }, role: { type: 'string', enum: ['admin', 'teacher', 'student', 'parent'] }, linkedProfileId: { type: 'string', nullable: true }, linkedStudentIds: { type: 'array', items: { type: 'string' } }, isActive: { type: 'boolean' } } },
     access_token: { type: 'string', description: 'Bearer JWT with the configured 15-minute lifetime.' },
     refresh_token: { type: 'string', description: 'Rotating refresh JWT with the configured 7-day lifetime.' },
   },
@@ -26,11 +26,41 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  @ApiOperation({ summary: 'Register a user, hash their password, and create an authenticated session' })
+  @ApiOperation({ summary: 'Bootstrap the first user, or create a user as an administrator' })
   @ApiResponse({ status: 201, description: 'User registered and tokens issued successfully', schema: sessionSchema })
   @ApiResponse({ status: 400, description: 'Invalid registration payload' })
   @ApiResponse({ status: 409, description: 'Email already registered' })
-  register(@Body() dto: RegisterUserDto) { return this.authService.register(dto); }
+  @ApiResponse({ status: 403, description: 'Registration is restricted to administrators after initial setup' })
+  register(
+    @Body() dto: RegisterUserDto,
+    @Headers('x-user-role') requesterRole?: string,
+    @Headers('authorization') authorization?: string,
+  ) {
+    return this.authService.register(dto, requesterRole, authorization);
+  }
+
+  @Get('users')
+  @ApiOperation({ summary: 'List users for administrator account management' })
+  @ApiResponse({ status: 200, description: 'Users returned without password hashes' })
+  @ApiResponse({ status: 403, description: 'Administrator role required' })
+  listUsers(@Headers('x-user-role') requesterRole?: string, @Headers('authorization') authorization?: string) {
+    return this.authService.listUsers(requesterRole, authorization);
+  }
+
+  @Delete('users/:id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Permanently delete a user login and revoke all of its refresh tokens' })
+  @ApiResponse({ status: 200, description: 'User login and refresh tokens deleted' })
+  @ApiResponse({ status: 400, description: 'An administrator cannot delete their own account' })
+  @ApiResponse({ status: 403, description: 'Administrator role required' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  deleteUser(
+    @Param('id') userId: string,
+    @Headers('x-user-role') requesterRole?: string,
+    @Headers('authorization') authorization?: string,
+  ) {
+    return this.authService.deleteUser(userId, requesterRole, authorization);
+  }
 
   @Post('login')
   @ApiOperation({ summary: 'Authenticate with email and password, then issue access and refresh tokens' })
@@ -60,11 +90,13 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Verify a Bearer access token for API Gateway authentication' })
-  @ApiResponse({ status: 200, description: 'Token claims decoded successfully', schema: { type: 'object', required: ['sub', 'email', 'role'], properties: { sub: { type: 'string' }, email: { type: 'string', format: 'email' }, role: { type: 'string', enum: ['admin', 'teacher', 'student', 'parent'] } } } })
+  @ApiResponse({ status: 200, description: 'Token claims and the parent\'s current linked student IDs decoded successfully', schema: { type: 'object', required: ['sub', 'email', 'role', 'linkedStudentIds'], properties: { sub: { type: 'string' }, email: { type: 'string', format: 'email' }, role: { type: 'string', enum: ['admin', 'teacher', 'student', 'parent'] }, linkedStudentIds: { type: 'array', items: { type: 'string' } } } } })
   @ApiResponse({ status: 401, description: 'Missing, invalid, expired, or refresh token used as Bearer token' })
-  verify(@Req() request: AuthenticatedRequest) {
+  async verify(@Req() request: AuthenticatedRequest) {
     const { sub, email, role } = request.user;
-    return { sub, email, role };
+    const user = await this.authService.findVerifiedUser(sub);
+    if (!user) throw new NotFoundException('User not found');
+    return { sub, email, role, linkedProfileId: user.linkedProfileId, linkedStudentIds: user.linkedStudentIds ?? [] };
   }
 }
 

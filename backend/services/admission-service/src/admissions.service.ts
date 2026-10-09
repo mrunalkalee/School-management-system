@@ -46,6 +46,13 @@ export class AdmissionsService {
     return admission;
   }
 
+  async remove(id: string): Promise<{ message: string }> {
+    this.assertValidId(id);
+    const admission = await this.admissionModel.findByIdAndDelete(id).exec();
+    if (!admission) throw new NotFoundException(`Admission ${id} was not found`);
+    return { message: 'Admission application deleted successfully' };
+  }
+
   private async remote<T>(baseUrl: string, id: string, name: string): Promise<T> {
     try {
       const response = await firstValueFrom(this.httpService.get<T>(`${baseUrl}/${id}`));

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, Headers, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { Roles } from './roles.decorator';
@@ -25,10 +25,21 @@ export class StudentController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'List active students, optionally by class or search term' })
+  @ApiOperation({ summary: 'List active students, optionally by class or search term; admins may include inactive students' })
   @ApiResponse({ status: 200, description: 'Students returned successfully' })
-  findAll(@Query('classId') classId?: string, @Query('search') search?: string) {
-    return this.studentService.findAll(classId, search);
+  @ApiResponse({ status: 403, description: 'Administrator role required to include inactive students' })
+  findAll(
+    @Query('classId') classId?: string,
+    @Query('search') search?: string,
+    @Query('includeInactive') includeInactiveQuery?: string,
+    @Headers('x-user-role') requesterRole?: string,
+  ) {
+    const includeInactive = includeInactiveQuery === 'true';
+    // Direct service testing without gateway identity headers remains available locally.
+    if (includeInactive && requesterRole && requesterRole !== 'admin') {
+      throw new ForbiddenException('Administrator access is required to include inactive students');
+    }
+    return this.studentService.findAll(classId, search, includeInactive);
   }
 
   @Get('by-auth-user/:authUserId')

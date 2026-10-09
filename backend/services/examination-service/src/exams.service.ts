@@ -58,6 +58,21 @@ export class ExamsService {
     return exam;
   }
 
+  async remove(id: string): Promise<{ message: string }> {
+    await this.findOne(id);
+    await this.marksModel.deleteMany({ examId: id }).exec();
+    await this.examModel.findByIdAndDelete(id).exec();
+    return { message: 'Exam deleted successfully' };
+  }
+
+  async removeMark(examId: string, markId: string): Promise<{ message: string }> {
+    await this.findOne(examId);
+    this.assertValidId(markId, 'Mark');
+    const mark = await this.marksModel.findOneAndDelete({ _id: markId, examId }).exec();
+    if (!mark) throw new NotFoundException(`Mark ${markId} was not found for exam ${examId}`);
+    return { message: 'Mark deleted successfully' };
+  }
+
   async enterMarks(examId: string, enterMarksDto: EnterMarksDto): Promise<MarksDocument[]> {
     const exam = await this.findOne(examId);
     for (const mark of enterMarksDto.marks) {

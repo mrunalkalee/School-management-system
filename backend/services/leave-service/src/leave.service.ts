@@ -64,6 +64,13 @@ export class LeaveService {
     return leaveRequest;
   }
 
+  async remove(id: string): Promise<{ message: string }> {
+    this.assertValidId(id);
+    const leaveRequest = await this.leaveRequestModel.findByIdAndDelete(id).exec();
+    if (!leaveRequest) throw new NotFoundException(`Leave request ${id} was not found`);
+    return { message: 'Leave request deleted successfully' };
+  }
+
   private async remote<T>(baseUrl: string, id: string, name: string): Promise<T> {
     try {
       const response = await firstValueFrom(this.httpService.get<T>(`${baseUrl}/${id}`));

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser, GatewayUser } from './current-user.decorator';
 import { CreateLeaveRequestDto } from './dto/create-leave-request.dto';
@@ -37,6 +37,9 @@ export class LeaveController {
       ? RequesterType.Student
       : RequesterType.Teacher;
 
+    if (currentUser.linkedProfileId) {
+      return this.leaveService.create({ ...leaveRequest, requesterId: currentUser.linkedProfileId, requesterType });
+    }
     return this.leaveService.createForAuthUser(currentUser.id, requesterType, leaveRequest);
   }
 
@@ -69,6 +72,15 @@ export class LeaveController {
   review(@Param('id') id: string, @Body() reviewLeaveRequestDto: ReviewLeaveRequestDto) {
     return this.leaveService.review(id, reviewLeaveRequestDto);
   }
+
+  @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiOperation({ summary: 'Delete a leave request' })
+  @ApiParam({ name: 'id', example: '66b5d38acd65f26429ab4ce5' })
+  @ApiResponse({ status: 200, description: 'Leave request deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Leave request not found' })
+  remove(@Param('id') id: string) { return this.leaveService.remove(id); }
 }
 
 @ApiTags('Health')

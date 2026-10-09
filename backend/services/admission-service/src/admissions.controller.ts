@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AdmissionStatus } from './admission.schema';
 import { AdmissionsService } from './admissions.service';
@@ -48,6 +48,15 @@ export class AdmissionsController {
   updateStatus(@Param('id') id: string, @Body() updateAdmissionStatusDto: UpdateAdmissionStatusDto) {
     return this.admissionsService.updateStatus(id, updateAdmissionStatusDto);
   }
+
+  @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiOperation({ summary: 'Delete an admission application' })
+  @ApiParam({ name: 'id', example: '66b5d38acd65f26429ab4ce5' })
+  @ApiResponse({ status: 200, description: 'Admission application deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Admission application not found' })
+  remove(@Param('id') id: string) { return this.admissionsService.remove(id); }
 }
 
 @ApiTags('Health')

@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
-import { ApiHeader, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateFeeStructureDto } from './dto/create-fee-structure.dto';
+import { UpdateFeeStructureDto } from './dto/update-fee-structure.dto';
 import { FeeStructuresService } from './fee-structures.service';
 import { Roles } from './roles.decorator';
 import { RolesGuard } from './roles.guard';
@@ -29,6 +30,29 @@ export class FeeStructuresController {
   @ApiQuery({ name: 'classId', required: false, example: '66b5d38acd65f26429ab4ce2' })
   @ApiResponse({ status: 200, description: 'Fee structures returned successfully' })
   findAll(@Query('classId') classId?: string) { return this.feeStructuresService.findAll(classId); }
+
+  @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may update fee structures.' })
+  @ApiOperation({ summary: 'Update a fee structure' })
+  @ApiParam({ name: 'id', example: '66b5d38acd65f26429ab4ce5' })
+  @ApiResponse({ status: 200, description: 'Fee structure updated successfully' })
+  @ApiResponse({ status: 404, description: 'Fee structure or class not found' })
+  @ApiResponse({ status: 409, description: 'Fee structure already exists for this class, academic year, and fee type' })
+  update(@Param('id') id: string, @Body() dto: UpdateFeeStructureDto) { return this.feeStructuresService.update(id, dto); }
+
+  @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may delete fee structures.' })
+  @ApiOperation({ summary: 'Permanently delete a fee structure' })
+  @ApiParam({ name: 'id', example: '66b5d38acd65f26429ab4ce5' })
+  @ApiResponse({ status: 200, description: 'Fee structure deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Fee structure not found' })
+  remove(@Param('id') id: string) { return this.feeStructuresService.remove(id); }
 }
 
 @ApiTags('Health')

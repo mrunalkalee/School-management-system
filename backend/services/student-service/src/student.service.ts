@@ -17,8 +17,8 @@ export class StudentService {
     }
   }
 
-  async findAll(classId?: string, search?: string): Promise<StudentDocument[]> {
-    const filter: FilterQuery<Student> = { isActive: true };
+  async findAll(classId?: string, search?: string, includeInactive = false): Promise<StudentDocument[]> {
+    const filter: FilterQuery<Student> = includeInactive ? {} : { isActive: true };
     if (classId) filter.classId = classId;
     if (search) {
       const expression = new RegExp(this.escapeRegex(search), 'i');

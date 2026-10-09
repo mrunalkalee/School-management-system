@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsArray, IsEmail, IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { UserRole } from '../user.schema';
 
 export class RegisterUserDto {
@@ -22,4 +22,12 @@ export class RegisterUserDto {
   @ApiPropertyOptional({ example: '66b5d38acd65f26429ab4ce1', description: 'Optional student-service or teacher-service profile ID' })
   @IsOptional() @IsString() @MaxLength(100)
   linkedProfileId?: string;
+
+  @ApiPropertyOptional({
+    type: [String],
+    example: ['66b5d38acd65f26429ab4ce1'],
+    description: 'Student profile IDs visible to a parent account. Leave empty for other roles.',
+  })
+  @IsOptional() @IsArray() @IsString({ each: true }) @MaxLength(100, { each: true })
+  linkedStudentIds?: string[];
 }
