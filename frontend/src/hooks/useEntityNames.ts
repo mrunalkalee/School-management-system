@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { gateway } from '../api/gateway';
 
 export type EntityType = 'student' | 'teacher' | 'class' | 'subject';
-type Entity = { _id: string; firstName?: string; lastName?: string; name?: string; section?: string; authUserId?: string };
+type Entity = { _id: string; firstName?: string; lastName?: string; name?: string; section?: string; authUserId?: string; userId?: string | null };
 
 const cache = new Map<EntityType, Map<string, string>>();
 const endpoints: Record<EntityType, string> = { student: '/students', teacher: '/teachers', class: '/classes', subject: '/subjects' };
@@ -27,6 +27,7 @@ export function useEntityNames(idsByType: Partial<Record<EntityType, string[]>>,
         const name = displayName(type, entity);
         names.set(entity._id, name);
         if (type === 'teacher' && entity.authUserId) names.set(entity.authUserId, name);
+        if (type === 'teacher' && entity.userId) names.set(entity.userId, name);
       });
       cache.set(type, names);
     })).finally(() => setLoading(new Set()));

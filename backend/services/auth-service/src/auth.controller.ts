@@ -96,7 +96,7 @@ export class AuthController {
     const { sub, email, role } = request.user;
     const user = await this.authService.findVerifiedUser(sub);
     if (!user) throw new NotFoundException('User not found');
-    return { sub, email, role, linkedStudentIds: user.linkedStudentIds ?? [] };
+    return { sub, email, role, linkedProfileId: user.linkedProfileId, linkedStudentIds: user.linkedStudentIds ?? [] };
   }
 }
 

@@ -83,6 +83,13 @@ export class AttendanceService {
     return attendance;
   }
 
+  async remove(id: string): Promise<{ message: string }> {
+    this.assertValidId(id);
+    const attendance = await this.attendanceModel.findByIdAndDelete(id).exec();
+    if (!attendance) throw new NotFoundException(`Attendance record ${id} was not found`);
+    return { message: 'Attendance record deleted successfully' };
+  }
+
   private async validateReferences(classId: string, studentIds: string[]): Promise<void> {
     const classServiceUrl = this.configService.getOrThrow<string>('CLASS_SERVICE_URL');
     const studentServiceUrl = this.configService.getOrThrow<string>('STUDENT_SERVICE_URL');

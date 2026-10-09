@@ -24,6 +24,12 @@ export async function gateway<T>(path: string, init: RequestInit = {}, token?: s
     const message = typeof data === 'object' && data && 'message' in data
       ? Array.isArray(data.message) ? data.message.join(', ') : String(data.message)
       : `Request failed with status ${response.status}.`;
+    // Only an authenticated request can expire a saved browser session. A
+    // failed login is also a 401, but must remain on the login form.
+    if (response.status === 401 && token) {
+      clearSession();
+      window.dispatchEvent(new Event('brightboard-session-expired'));
+    }
     throw new GatewayError(response.status, message);
   }
   return data as T;

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser, GatewayUser } from './current-user.decorator';
 import { MarkAttendanceDto } from './dto/mark-attendance.dto';
@@ -49,9 +49,9 @@ export class AttendanceController {
 
   @Patch(':id')
   @UseGuards(RolesGuard)
-  @Roles('admin', 'teacher')
+  @Roles('admin')
   @ApiHeader({ name: 'x-user-id', required: false, description: 'Set by API Gateway after JWT verification; used as markedBy when x-user-role is present.' })
-  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin and teacher may update attendance.' })
+  @ApiHeader({ name: 'x-user-role', required: false, enum: ['admin', 'teacher', 'student', 'parent'], description: 'Set by API Gateway. Only admin may update attendance.' })
   @ApiOperation({ summary: 'Update an attendance record status or manual marker' })
   @ApiParam({ name: 'id', example: '66b5d38acd65f26429ab4ce3' })
   @ApiResponse({ status: 200, description: 'Attendance record updated successfully' })
@@ -67,6 +67,15 @@ export class AttendanceController {
     const { markedBy: _manualMarkedBy, ...attendance } = updateAttendanceDto;
     return this.attendanceService.update(id, { ...attendance, markedBy: currentUser.id });
   }
+
+  @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiOperation({ summary: 'Delete an attendance record' })
+  @ApiParam({ name: 'id', example: '66b5d38acd65f26429ab4ce3' })
+  @ApiResponse({ status: 200, description: 'Attendance record deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Attendance record not found' })
+  remove(@Param('id') id: string) { return this.attendanceService.remove(id); }
 }
 
 @ApiTags('Health')

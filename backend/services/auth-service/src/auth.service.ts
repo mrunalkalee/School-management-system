@@ -91,9 +91,9 @@ export class AuthService {
   }
 
   /** Used by token verification so parent-child links take effect immediately. */
-  async findVerifiedUser(userId: string): Promise<{ linkedStudentIds: string[] } | null> {
-    return this.userModel.findById(userId, { linkedStudentIds: 1, isActive: 1 }).lean().exec()
-      .then((user) => user?.isActive ? { linkedStudentIds: user.linkedStudentIds ?? [] } : null);
+  async findVerifiedUser(userId: string): Promise<{ linkedStudentIds: string[]; linkedProfileId?: string } | null> {
+    return this.userModel.findById(userId, { linkedStudentIds: 1, linkedProfileId: 1, isActive: 1 }).lean().exec()
+      .then((user) => user?.isActive ? { linkedStudentIds: user.linkedStudentIds ?? [], linkedProfileId: user.linkedProfileId } : null);
   }
 
   private async createSession(user: UserDocument): Promise<AuthResponse> {

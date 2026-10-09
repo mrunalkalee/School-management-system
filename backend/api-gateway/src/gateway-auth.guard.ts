@@ -4,8 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import { firstValueFrom } from 'rxjs';
 
-interface VerifiedUser { sub: string; email: string; role: string; linkedStudentIds?: string[]; }
-interface GatewayRequest extends Request { headers: Request['headers'] & { 'x-user-id'?: string; 'x-user-role'?: string; 'x-linked-student-ids'?: string }; }
+interface VerifiedUser { sub: string; email: string; role: string; linkedProfileId?: string; linkedStudentIds?: string[]; }
+interface GatewayRequest extends Request { headers: Request['headers'] & { 'x-user-id'?: string; 'x-user-role'?: string; 'x-linked-profile-id'?: string; 'x-linked-student-ids'?: string }; }
 
 @Injectable()
 export class GatewayAuthGuard implements CanActivate {
@@ -28,6 +28,7 @@ export class GatewayAuthGuard implements CanActivate {
     }
     request.headers['x-user-id'] = verifiedUser.sub;
     request.headers['x-user-role'] = verifiedUser.role;
+    request.headers['x-linked-profile-id'] = verifiedUser.linkedProfileId ?? '';
     request.headers['x-linked-student-ids'] = (verifiedUser.linkedStudentIds ?? []).join(',');
     this.assertParentCanAccess(request, verifiedUser);
     return true;
