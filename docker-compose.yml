@@ -197,8 +197,10 @@ services:
       - ./backend/services/certificate-service/.env
     environment:
       STUDENT_SERVICE_URL: http://student-service:3001/students
+      TEACHER_SERVICE_URL: http://teacher-service:3002/teachers
     depends_on:
       - student-service
+      - teacher-service
 
   notice-service:
     build:

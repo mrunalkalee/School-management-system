@@ -48,7 +48,9 @@ export class GatewayAuthGuard implements CanActivate {
 
     // Keep the parent allow-list explicit: a new route cannot accidentally
     // reveal school-wide student records to every parent account.
-    const sharedReadOnlyPaths = ['/timetables', '/notices', '/events', '/library/books', '/transport/routes'];
+    // These catalogs are read-only reference data used to label a linked
+    // child's timetable, performance, and assignments in the parent portal.
+    const sharedReadOnlyPaths = ['/timetables', '/notices', '/events', '/library/books', '/transport/routes', '/classes', '/subjects', '/teachers'];
     const accountPaths = ['/auth/verify', '/auth/logout'];
     if ((request.method === 'GET' && sharedReadOnlyPaths.includes(request.path)) || accountPaths.includes(request.path)) return;
     throw new ForbiddenException('Parents can only access their linked children\'s records');

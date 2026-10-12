@@ -4,6 +4,7 @@ import { IncomingHttpHeaders } from 'node:http';
 export interface CurrentUser {
   id?: string;
   role?: 'admin' | 'teacher' | 'student' | 'parent';
+  linkedProfileId?: string;
 }
 
 export const CurrentUser = createParamDecorator(
@@ -17,6 +18,7 @@ export const CurrentUser = createParamDecorator(
     return {
       id: getHeader('x-user-id'),
       role: getHeader('x-user-role') as CurrentUser['role'],
+      linkedProfileId: getHeader('x-linked-profile-id'),
     };
   },
 );

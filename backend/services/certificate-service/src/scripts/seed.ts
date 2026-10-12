@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
-import { CertificateSchema, CertificateType } from '../certificate.schema';
+import { CertificateRecipientType, CertificateRequestStatus, CertificateSchema, CertificateType } from '../certificate.schema';
 
 const uri = process.env.MONGODB_URI;
 async function seed(): Promise<void> {
@@ -9,7 +9,7 @@ async function seed(): Promise<void> {
   const CertificateModel = mongoose.model('Certificate', CertificateSchema);
   await CertificateModel.findOneAndUpdate(
     { studentId: 'replace-with-student-id', type: CertificateType.Bonafide },
-    { $setOnInsert: { studentId: 'replace-with-student-id', type: CertificateType.Bonafide, fileUrl: 'https://example.com/replace-with-certificate-url.pdf', issuedBy: 'replace-with-issuer-id' } },
+    { $setOnInsert: { studentId: 'replace-with-student-id', recipientId: 'replace-with-student-id', recipientType: CertificateRecipientType.Student, type: CertificateType.Bonafide, status: CertificateRequestStatus.Approved, issuedDate: new Date(), fileUrl: 'https://example.com/replace-with-certificate-url.pdf', issuedBy: 'replace-with-issuer-id' } },
     { new: true, upsert: true },
   );
   console.log('Seeded a sample certificate. Replace placeholder IDs and URL before production use.');
