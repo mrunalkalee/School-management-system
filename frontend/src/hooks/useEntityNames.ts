@@ -30,7 +30,10 @@ export function useEntityNames(idsByType: Partial<Record<EntityType, string[]>>,
         if (type === 'teacher' && entity.userId) names.set(entity.userId, name);
       });
       cache.set(type, names);
-    })).finally(() => setLoading(new Set()));
+    })).catch(() => {
+      // Some roles can read a record but are not allowed to list every
+      // referenced entity. Keep the page usable and leave the raw ID visible.
+    }).finally(() => setLoading(new Set()));
   }, [requested, token]);
 
   function resolve(type: EntityType, id?: string) {

@@ -55,8 +55,11 @@ export function StructuredResourcePage({ id, title, endpoint, action, session }:
   const [open,setOpen]=useState(false),[error,setError]=useState(''),[busy,setBusy]=useState(false),[selectedClass,setSelectedClass]=useState(''),[periods,setPeriods]=useState([{periodNumber:1,subjectId:'',teacherId:'',startTime:'09:00',endTime:'09:45'}]),[stops,setStops]=useState([{stopName:'',pickupTime:'07:30'}]),[attendance,setAttendance]=useState<Record<string,string>>({});
   const [editing,setEditing]=useState<Row|null>(null),[editDraft,setEditDraft]=useState<Record<string,string>>({}),[deletingId,setDeletingId]=useState<string|null>(null);
   const isAdmin = session.user.role === 'admin';
-  const need = id==='students'||id==='teachers'||id==='timetables'||id==='attendance'||id==='exams'||id==='fees'||id==='leave'||id==='admissions'||id==='certificates'||id==='notices';
-  async function load(){setError('');try{const req:Promise<Row[]>[]=[gateway<Row[]>(endpoint,{},session.access_token)];if(need)req.push(gateway<Row[]>('/classes',{},session.access_token),gateway<Row[]>('/subjects',{},session.access_token),gateway<Row[]>('/teachers',{},session.access_token),gateway<Row[]>('/students',{},session.access_token));const [data,c,s,t,st]=await Promise.all(req);setRows(data);if(c){setClasses(c);setSubjects(s!);setTeachers(t!);setStudents(st!);}}catch(e){setError(e instanceof Error?e.message:'Unable to load data.');}}
+  // Reference lists are only needed to compose/edit records. Parents have
+  // read-only access to shared resources and must not trigger protected
+  // school-wide lookups while loading them.
+  const need = session.user.role !== 'parent' && (id==='students'||id==='teachers'||id==='timetables'||id==='attendance'||id==='exams'||id==='fees'||id==='leave'||id==='admissions'||id==='certificates'||id==='notices');
+  async function load(){setError('');setRows([]);try{const req:Promise<Row[]>[]=[gateway<Row[]>(endpoint,{},session.access_token)];if(need)req.push(gateway<Row[]>('/classes',{},session.access_token),gateway<Row[]>('/subjects',{},session.access_token),gateway<Row[]>('/teachers',{},session.access_token),gateway<Row[]>('/students',{},session.access_token));const [data,c,s,t,st]=await Promise.all(req);setRows(data);if(c){setClasses(c);setSubjects(s!);setTeachers(t!);setStudents(st!);}}catch(e){setError(e instanceof Error?e.message:'Unable to load data.');}}
   useEffect(()=>{void load();},[endpoint,session.access_token]);
   const idsByType = useMemo<Partial<Record<EntityType, string[]>>>(() => {
     const ids: Partial<Record<EntityType, string[]>> = {};
